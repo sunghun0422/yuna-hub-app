@@ -1,4 +1,4 @@
-// server/index.js
+// server/index.js  (fixed)
 
 import express from "express";
 import cors from "cors";
@@ -6,42 +6,42 @@ import routes from "./routes/index.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// ✅ 경로 설정
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 경로 기준: 배포 런타임의 CWD 사용
+const ROOT_DIR = process.cwd();
+const PUBLIC_DIR = path.join(ROOT_DIR, "public");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ public 폴더를 정적으로 오픈 (dotfiles 포함)
-const PUBLIC_DIR = path.join(__dirname, "..", "public");
+// 정적 파일 (dotfiles 포함)
 app.use(
   express.static(PUBLIC_DIR, {
-    dotfiles: "allow", // .well-known 같은 폴더 접근 허용
+    dotfiles: "allow",
   })
 );
 
-// ✅ 백업용 수동 라우트 (.well-known 대응)
+// ── 명시 라우트: .well-known/ai-plugin.json
 app.get("/.well-known/ai-plugin.json", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, ".well-known", "ai-plugin.json"));
 });
 
-// ✅ API 미들웨어
+// ── 명시 라우트: openapi.yaml (콘텐츠 타입 보장)
+app.get("/openapi.yaml", (req, res) => {
+  res.type("text/yaml");
+  res.sendFile(path.join(PUBLIC_DIR, "openapi.yaml"));
+});
+
+// API 미들웨어
 app.use(cors());
 app.use(express.json());
 app.use("/api", routes);
 
-// ✅ 기본 루트
-app.get("/", (req, res) => {
+// 루트/헬스
+app.get("/", (_req, res) => {
   res.send("🌙 Yuna Hub App is running successfully!");
 });
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
-// ✅ 헬스체크
-app.get("/healthz", (req, res) => {
-  res.json({ ok: true });
-});
-
-// ✅ 서버 실행
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
