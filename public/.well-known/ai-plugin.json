@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Yuna Hub",
+  "name_for_model": "yuna_hub",
+  "description_for_human": "Yuna's private memory and story hub app.",
+  "description_for_model": "Provides Lee Sung Hun's personal data, memory, and story integration endpoints for ChatGPT.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://yuna-hub-app.vercel.app/openapi.yaml"
+  },
+  "logo_url": "https://yuna-hub-app.vercel.app/logo.png",
+  "contact_email": "sunghun@kotra.or.kr",
+  "legal_info_url": "https://yuna-hub-app.vercel.app/legal"
+}
