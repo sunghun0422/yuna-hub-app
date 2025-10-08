@@ -1,20 +1,31 @@
 {
   "version": 2,
   "builds": [
-    { "src": "server/index.js", "use": "@vercel/node" }
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    // ✅ 정적 파일: 먼저 매칭시킨다
-    { "src": "/\\.well-known/ai-plugin\\.json", "dest": "public/.well-known/ai-plugin.json" },
-    { "src": "/openapi\\.yaml", "dest": "public/openapi.yaml" },
-
-    // ✅ 헬스체크
-    { "src": "/healthz", "dest": "server/index.js" },
-
-    // ✅ API 라우트는 서버로
-    { "src": "/api/(.*)", "dest": "server/index.js" },
-
-    // ✅ 그 외 요청은 public 정적 파일로 (필요 시)
-    { "src": "/(.*)", "dest": "public/$1" }
+    {
+      "src": "/\\.well-known/ai-plugin\\.json",
+      "dest": "public/.well-known/ai-plugin.json"
+    },
+    {
+      "src": "/openapi\\.yaml",
+      "dest": "public/openapi.yaml"
+    },
+    {
+      "src": "/healthz",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "public/$1"
+    }
   ]
 }
