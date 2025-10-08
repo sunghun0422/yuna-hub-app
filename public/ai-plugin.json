@@ -1,0 +1,12 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "YunaHub",
+  "name_for_model": "yuna_hub",
+  "description_for_human": "메일·캘린더·문서 요약을 한 번에 처리하는 허브 앱.",
+  "description_for_model": "Provide endpoints to summarize URLs/files, fetch and summarize calendar events, and search internal documents.",
+  "auth": { "type": "user_http", "authorization_type": "bearer" },
+  "api": { "type": "openapi", "url": "https://YOUR_DOMAIN/openapi.yaml" },
+  "logo_url": "https://YOUR_DOMAIN/logo.png",
+  "contact_email": "ops@yourdomain.com",
+  "legal_info_url": "https://yourdomain.com/legal"
+}
