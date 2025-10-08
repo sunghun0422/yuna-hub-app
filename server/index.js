@@ -1,5 +1,4 @@
-// server/index.js
-// 💡 Yuna Hub App main server file (Vercel-ready)
+// server/index.js  (Vercel serverless handler 버전)
 
 import express from "express";
 import cors from "cors";
@@ -7,35 +6,45 @@ import routes from "./routes/index.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 런타임 기준 경로 (안전)
+const ROOT_DIR = process.cwd();
+const PUBLIC_DIR = path.join(ROOT_DIR, "public");
 
 const app = express();
 
-// ✅ 1. public 폴더 전체 정적 서빙
-app.use(express.static(path.join(__dirname, "..", "public")));
+// 정적 파일 (dotfiles 포함)
+app.use(
+  express.static(PUBLIC_DIR, {
+    dotfiles: "allow",
+  })
+);
 
-// ✅ 2. 개별 경로 강제 지정 (404 방지)
-app.get("/openapi.yaml", (_req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", "openapi.yaml"));
-});
-
+// 명시 라우트: 플러그인 매니페스트 & OpenAPI
 app.get("/.well-known/ai-plugin.json", (_req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", ".well-known", "ai-plugin.json"));
+  res.sendFile(path.join(PUBLIC_DIR, ".well-known", "ai-plugin.json"));
+});
+app.get("/openapi.yaml", (_req, res) => {
+  res.type("text/yaml");
+  res.sendFile(path.join(PUBLIC_DIR, "openapi.yaml"));
 });
 
-// ✅ 3. 일반 미들웨어
+// 공통 미들웨어 & API
 app.use(cors());
 app.use(express.json());
-
-// ✅ 4. 내부 API 라우트 연결
 app.use("/api", routes);
 
-// ✅ 5. 헬스체크 엔드포인트
+// 헬스체크
 app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
-// ✅ 6. 서버 실행 (Vercel은 자동 포트 할당)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Yuna Hub server running on port ${PORT}`);
+// 루트
+app.get("/", (_req, res) => {
+  res.json({
+    name: "YunaHub",
+    plugin_manifest: "/.well-known/ai-plugin.json",
+    openapi: "/openapi.yaml",
+    health: "/healthz",
+  });
 });
+
+// ✅ Vercel serverless: handler export (listen 금지)
+export default (req, res) => app(req, res);
