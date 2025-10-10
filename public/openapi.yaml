@@ -1,79 +1,50 @@
 openapi: 3.1.0
 info:
-  title: YunaHub API
+  title: Yuna Hub API
   version: "1.0.0"
 servers:
   - url: https://YOUR_DOMAIN
 paths:
-  /healthz:
-    get:
-      summary: Health check
-      responses: { "200": { description: ok } }
-  /summarize-url:
+  /api/summarize-url:
     post:
-      summary: Summarize a given URL content
+      summary: Summarize a web page by URL
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              properties: { url: { type: string } }
+              required: [url]
+              properties:
+                url:
+                  type: string
       responses:
         "200":
-          description: summary
+          description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   ok: { type: boolean }
-                  title: { type: string }
-                  bullets:
-                    type: array
-                    items: { type: string }
-  /calendar-daily:
+                  summary: { type: string }
+
+  /api/docs/search:
     get:
-      summary: Get daily calendar summary
-      parameters:
-        - in: query
-          name: date
-          schema: { type: string, example: "2025-10-07" }
-      responses:
-        "200":
-          description: calendar summary
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok: { type: boolean }
-                  date: { type: string }
-                  items:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        time: { type: string }
-                        title: { type: string }
-                        location: { type: string }
-                        note: { type: string }
-  /docs/search:
-    get:
-      summary: Search internal docs
+      summary: Search documents
       parameters:
         - in: query
           name: q
+          required: false
           schema: { type: string }
       responses:
         "200":
-          description: search results
+          description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  ok: { type: boolean }
                   results:
                     type: array
                     items:
@@ -83,4 +54,28 @@ paths:
                         title: { type: string }
                         snippet: { type: string }
                         url: { type: string }
-components: {}
+
+  /api/calendar-daily:
+    get:
+      summary: Get daily calendar
+      parameters:
+        - in: query
+          name: date
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date: { type: string }
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        time: { type: string }
+                        title: { type: string }
