@@ -14,11 +14,15 @@
   "routes": [
     {
       "src": "/\\.well-known/(.*)",
-      "dest": "public/.well-known/$1"
+      "dest": "/public/.well-known/$1"
+    },
+    {
+      "src": "/openapi.yaml",
+      "dest": "/public/openapi.yaml"
     },
     {
       "src": "/(.*)",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     }
   ]
 }
