@@ -1,9 +1,8 @@
-export default async function docs(req, res) {
-  const q = (req.query.q || "").toString();
-  // 데모: 고정 응답
-  const items = [
-    { id: "1", title: "Hello world", snippet: "demo snippet", url: "https://example.com/hello" }
-  ].filter(i => !q || i.title.toLowerCase().includes(q.toLowerCase()));
-
-  res.json({ results: items });
+// server/docs.js
+export default function handler(req, res) {
+  if (req.method === 'GET') {
+    res.json({ files: ['태생방.pdf', '기억방.pdf', '여시방1.pdf'] });
+  } else {
+    res.status(405).end();
+  }
 }
