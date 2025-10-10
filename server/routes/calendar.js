@@ -8,7 +8,6 @@ const router = express.Router();
 router.get("/calendar-daily", async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
 
-  // TODO: Google Calendar OAuth 연동
   res.json(
     ok({
       date,
