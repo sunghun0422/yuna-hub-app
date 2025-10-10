@@ -1,14 +1,7 @@
-// server/lib/util.js
-
-function ok(data) {
+export function ok(data = {}) {
   return { ok: true, ...data };
 }
 
-function fail(message = "Something went wrong.") {
+export function err(message = "error") {
   return { ok: false, error: message };
 }
-
-module.exports = {
-  ok,
-  fail
-};
