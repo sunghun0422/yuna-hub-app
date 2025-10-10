@@ -1,11 +1,7 @@
 {
-  "version": 2,
-  "builds": [{ "src": "server/index.js", "use": "@vercel/node" }],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "server/index.js" },
-    { "src": "/healthz", "dest": "server/index.js" },
-    { "src": "/openapi.yaml", "dest": "server/index.js" },
-    { "src": "/.well-known/ai-plugin.json", "dest": "server/index.js" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+  "rewrites": [
+    { "source": "/calendar", "destination": "/server/calendar.js" },
+    { "source": "/docs", "destination": "/server/docs.js" },
+    { "source": "/summarize", "destination": "/server/summarize.js" }
   ]
 }
