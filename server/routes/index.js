@@ -1,9 +1,15 @@
+// server/routes/index.js
+
 import express from "express";
-import calendarRoute from "./calendar.js";
+import calendar from "./calendar.js";
+import summarize from "./summarize.js";
+import docs from "./docs.js";
 
 const router = express.Router();
 
-// ✅ 실제 API 경로 등록
-router.use("/calendar-daily", calendarRoute);
+// 📌 각각의 경로를 라우팅
+router.get("/calendar-daily", calendar);
+router.post("/summarize", summarize);
+router.get("/docs", docs);
 
 export default router;
