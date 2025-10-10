@@ -1,81 +1,64 @@
 openapi: 3.1.0
 info:
   title: Yuna Hub API
-  version: "1.0.0"
+  version: 1.0.0
 servers:
-  - url: https://YOUR_DOMAIN
+  - url: https://your-domain.com
 paths:
-  /api/summarize-url:
+  /calendar:
+    get:
+      operationId: getCalendar
+      summary: 캘린더 일정 가져오기
+      responses:
+        '200':
+          description: 일정 리스트
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      type: string
+
+  /docs:
+    get:
+      operationId: getDocuments
+      summary: 문서 리스트 가져오기
+      responses:
+        '200':
+          description: 문서 리스트
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: string
+
+  /summarize:
     post:
-      summary: Summarize a web page by URL
+      operationId: summarizeText
+      summary: 입력 텍스트 요약
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [url]
               properties:
-                url:
+                text:
                   type: string
       responses:
-        "200":
-          description: OK
+        '200':
+          description: 요약 결과
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  ok: { type: boolean }
-                  summary: { type: string }
-
-  /api/docs/search:
-    get:
-      summary: Search documents
-      parameters:
-        - in: query
-          name: q
-          required: false
-          schema: { type: string }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id: { type: string }
-                        title: { type: string }
-                        snippet: { type: string }
-                        url: { type: string }
-
-  /api/calendar-daily:
-    get:
-      summary: Get daily calendar
-      parameters:
-        - in: query
-          name: date
-          required: false
-          schema: { type: string }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  date: { type: string }
-                  events:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        time: { type: string }
-                        title: { type: string }
+                  summary:
+                    type: string
