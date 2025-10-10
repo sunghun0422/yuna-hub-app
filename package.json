@@ -1,16 +1,14 @@
 {
   "name": "yuna-hub-app",
   "version": "1.0.0",
-  "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "node server/index.js",
-    "start": "node server/index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "node-fetch": "^3.3.2",
-    "serverless-http": "^3.2.0"
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
   }
 }
