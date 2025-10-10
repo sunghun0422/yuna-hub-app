@@ -1,17 +1,9 @@
-import { ok } from "../lib/util.js";
+export default async function docs(req, res) {
+  const q = (req.query.q || "").toString();
+  // 데모: 고정 응답
+  const items = [
+    { id: "1", title: "Hello world", snippet: "demo snippet", url: "https://example.com/hello" }
+  ].filter(i => !q || i.title.toLowerCase().includes(q.toLowerCase()));
 
-export default async (req, res) => {
-  const q = (req.query.q || "").trim();
-  if (!q) return res.json(ok({ results: [] }));
-  // TODO: 사내 DB/Drive 검색 연결
-  return res.json(ok({
-    results: [
-      {
-        id: "doc_001",
-        title: `검색결과: ${q}`,
-        snippet: "문서 요약 또는 미리보기 텍스트",
-        url: "https://example.com/docs/doc_001"
-      }
-    ]
-  }));
-};
+  res.json({ results: items });
+}
