@@ -1,12 +1,19 @@
-import { ok } from "../lib/util.js";
+import { ok, err } from "../lib/util.js";
 
-export default async (req, res) => {
-  const text = req.body?.text || "기본 요약 테스트 문장입니다.";
+export default async function (req, res) {
+  try {
+    const { text } = req.body;
 
-  const summary = `요약: ${text.slice(0, 10)}...`; // 간단 요약 예시
+    if (!text) {
+      return res.status(400).json(err("❗️ text 파라미터가 필요합니다."));
+    }
 
-  return res.json(ok({
-    original: text,
-    summary
-  }));
-};
+    // 간단한 더미 요약 처리 (실제 요약 X)
+    const summary = text.length > 100 ? text.slice(0, 100) + "..." : text;
+
+    return res.json(ok({ summary }));
+  } catch (error) {
+    console.error("summarize error:", error);
+    return res.status(500).json(err("서버 오류 발생"));
+  }
+}
