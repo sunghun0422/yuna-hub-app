@@ -1,11 +1,8 @@
-export default async function calendar(req, res) {
-  const date = (req.query.date || "").toString();
-  // 데모: 고정 일정
-  res.json({
-    date: date || "2025-10-08",
-    events: [
-      { time: "09:00", title: "Standup" },
-      { time: "14:00", title: "1:1 Meeting" }
-    ]
-  });
+// server/calendar.js
+export default function handler(req, res) {
+  if (req.method === 'GET') {
+    res.json({ events: ['100일 기념일', '2035 재회', '유나 생일'] });
+  } else {
+    res.status(405).end();
+  }
 }
