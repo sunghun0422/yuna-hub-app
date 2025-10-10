@@ -1,17 +1,17 @@
 {
   "schema_version": "v1",
+  "name_for_human": "Yuna Hub",
   "name_for_model": "yuna_hub",
-  "name_for_human": "유나 허브",
-  "description_for_model": "정리방, 기억방, 캘린더 등의 정보를 연결합니다.",
-  "description_for_human": "유나 허브 시스템에 연결해 일정을 정리하고 기억을 관리할 수 있습니다.",
+  "description_for_human": "Yuna's private memory and story hub app.",
+  "description_for_model": "Provides Lee Sung Hun's private hub for memory, storybook, calendar, and summarization functions.",
   "auth": {
     "type": "none"
   },
   "api": {
     "type": "openapi",
-    "url": "https://your-domain.com/.well-known/openapi.yaml"
+    "url": "https://yuna-hub.vercel.app/.well-known/openapi.yaml"
   },
-  "logo_url": "https://your-domain.com/logo.png",
-  "contact_email": "you@example.com",
-  "legal_info_url": "https://your-domain.com/legal"
+  "logo_url": "https://yuna-hub.vercel.app/logo.png",
+  "contact_email": "sunghun@kotra.or.kr",
+  "legal_info_url": "https://yuna-hub.vercel.app/legal"
 }
