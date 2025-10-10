@@ -1,11 +1,10 @@
 {
   "name": "yuna-hub-app",
   "version": "1.0.0",
-  "description": "Yuna's AI Plugin Server",
   "type": "module",
-  "main": "server/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
