@@ -1,11 +1,12 @@
 import { ok } from "../lib/util.js";
 
 export default async (req, res) => {
-  const { url } = req.body || {};
-  if (!url) return res.status(400).json({ ok:false, error: "url_required" });
-  // TODO: 실제 요약 로직(크롤/추출 + 요약) 연결
+  const text = req.body?.text || "기본 요약 테스트 문장입니다.";
+
+  const summary = `요약: ${text.slice(0, 10)}...`; // 간단 요약 예시
+
   return res.json(ok({
-    title: `Summary of ${url}`,
-    bullets: ["핵심 1","핵심 2","핵심 3"]
+    original: text,
+    summary
   }));
 };
