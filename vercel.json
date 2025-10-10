@@ -1,23 +1,14 @@
 {
   "functions": {
-    "api/index.js": {
-      "runtime": "nodejs18.x"
-    }
+    "api/*.js": { "runtime": "nodejs18.x" }
   },
-  "rewrites": [
-    { "source": "/health", "destination": "/api/index" },
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/.well-known/(.*)", "destination": "/public/.well-known/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/(api|health)(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Headers", "value": "Authorization, X-API-Key, Content-Type" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" }
-      ]
-    }
+  "routes": [
+    { "src": "/health", "dest": "/api/health" },
+    { "src": "/api/health", "dest": "/api/health" },
+
+    { "handle": "filesystem" },
+
+    { "src": "/api/(.*)", "dest": "/api/index" },
+    { "src": "/\\.well-known/(.*)", "dest": "/public/.well-known/$1" }
   ]
 }
-
