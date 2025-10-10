@@ -1,19 +1,20 @@
-import { ok, err } from "../lib/util.js";
-
-export default async function (req, res) {
+export default async function summarize(req, res) {
   try {
     const { text } = req.body;
 
     if (!text) {
-      return res.status(400).json(err("❗️ text 파라미터가 필요합니다."));
+      return res.status(400).json({ ok: false, error: "Missing text to summarize." });
     }
 
-    // 간단한 더미 요약 처리 (실제 요약 X)
-    const summary = text.length > 100 ? text.slice(0, 100) + "..." : text;
+    // 예시 요약 로직
+    const summary = text.length > 100 ? text.slice(0, 97) + "..." : text;
 
-    return res.json(ok({ summary }));
+    res.status(200).json({
+      ok: true,
+      summary,
+    });
   } catch (error) {
-    console.error("summarize error:", error);
-    return res.status(500).json(err("서버 오류 발생"));
+    console.error("Summarization error:", error);
+    res.status(500).json({ ok: false, error: "Internal Server Error" });
   }
 }
