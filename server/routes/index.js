@@ -1,8 +1,10 @@
-const express = require("express");
-const calendar = require("./calendar.js");
+import { Router } from "express";
+import summarize from "./summarize.js";
+import calendar from "./calendar.js";
 
-const router = express.Router();
+const router = Router();
 
 router.get("/calendar-daily", calendar);
+router.post("/summarize", summarize);
 
-module.exports = router;
+export default router;
