@@ -1,7 +1,22 @@
 {
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
-    { "source": "/calendar", "destination": "/server/calendar.js" },
-    { "source": "/docs", "destination": "/server/docs.js" },
-    { "source": "/summarize", "destination": "/server/summarize.js" }
+    { "source": "/health", "destination": "/api/index" },
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/.well-known/(.*)", "destination": "/public/.well-known/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(api|health)(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Headers", "value": "Authorization, X-API-Key, Content-Type" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" }
+      ]
+    }
   ]
 }
