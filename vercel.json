@@ -1,28 +1,11 @@
 {
-  "version": 2,
-  "public": true,
   "builds": [
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
-    }
+    { "src": "index.js", "use": "@vercel/node" }
   ],
   "routes": [
     {
-      "src": "/\\.well-known/(.*)",
-      "dest": "public/.well-known/$1"
-    },
-    {
-      "src": "/openapi.yaml",
-      "dest": "public/openapi.yaml"
-    },
-    {
       "src": "/(.*)",
-      "dest": "server/index.js"
+      "dest": "/index.js"
     }
   ]
 }
