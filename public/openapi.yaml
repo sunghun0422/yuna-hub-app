@@ -1,48 +1,20 @@
-openapi: 3.1.0
+openapi: 3.0.1
 info:
   title: Yuna Hub API
+  description: OpenAPI specification for Yuna Hub plugin.
   version: 1.0.0
 servers:
-  - url: https://your-domain.com
+  - url: https://yuna-hub.vercel.app
 paths:
-  /calendar:
+  /health:
     get:
-      operationId: getCalendar
-      summary: 캘린더 일정 가져오기
+      summary: Health check endpoint
       responses:
         '200':
-          description: 일정 리스트
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  events:
-                    type: array
-                    items:
-                      type: string
-
-  /docs:
-    get:
-      operationId: getDocuments
-      summary: 문서 리스트 가져오기
-      responses:
-        '200':
-          description: 문서 리스트
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  files:
-                    type: array
-                    items:
-                      type: string
-
-  /summarize:
+          description: OK
+  /api/summarize:
     post:
-      operationId: summarizeText
-      summary: 입력 텍스트 요약
+      summary: Summarize content
       requestBody:
         required: true
         content:
@@ -54,7 +26,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: 요약 결과
+          description: Summary result
           content:
             application/json:
               schema:
