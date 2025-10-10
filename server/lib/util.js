@@ -1,4 +1,4 @@
-export function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toISOString().split('T')[0];
+// server/lib/util.js
+export function jsonResponse(res, status, data) {
+  res.status(status).json(data);
 }
