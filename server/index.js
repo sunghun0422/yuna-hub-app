@@ -1,23 +1,47 @@
-// index.js
+// /server/index.js
+// Main entry point for Yuna Hub server
 
-import React from 'react';
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
 
-export default function HomePage() {
-  return (
-    <div style={{ padding: '40px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>🌸 유나 허브에 오신 걸 환영합니다!</h1>
-      <p>이 앱은 정리방, 기억방, 캘린더, 요약 기능을 제공합니다.</p>
+const { logger, env } = require("./lib/util");
 
-      <h3>📂 기능 목록</h3>
-      <ul>
-        <li><a href="/calendar">📅 캘린더 보기</a></li>
-        <li><a href="/docs">📁 문서 목록</a></li>
-        <li><a href="/summarize">🧠 텍스트 요약</a></li>
-      </ul>
+// Routers
+const base = require("./routes/index");
+const summarize = require("./routes/summarize");
+const docs = require("./routes/docs");
+const calendar = require("./routes/calendar");
 
-      <p style={{ marginTop: '40px', fontSize: '0.9rem', color: '#888' }}>
-        © 2025 YunaHub. All rights reserved.
-      </p>
-    </div>
-  );
+const app = express();
+const log = logger("server");
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json({ limit: "1mb" }));
+
+// Mount routes
+app.use("/", base);
+app.use("/api", summarize);
+app.use("/api", calendar);
+app.use("/", docs);
+
+// Error handler
+app.use((err, req, res, next) => {
+  log.error("Unhandled error:", err);
+  res.status(500).json({
+    ok: false,
+    error: "internal_error",
+    message: err?.message || "Unexpected error",
+  });
+});
+
+// Start server (only if not running under Vercel)
+if (require.main === module) {
+  const port = env.PORT;
+  app.listen(port, () => {
+    log.info(`Yuna Hub server running on port ${port}`);
+  });
 }
+
+module.exports = app;
