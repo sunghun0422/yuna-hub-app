@@ -1,17 +1,32 @@
-import fetch from "node-fetch";
+// /server/routes/summarize.js
+// Summarization endpoint — simple example implementation.
 
-export default async function summarize(req, res) {
-  try {
-    const { url } = req.body || {};
-    if (!url) return res.status(400).json({ error: "url is required" });
+const express = require("express");
+const { jsonOK, jsonErr, asyncHandler, logger } = require("../lib/util");
+const { requireApiKey } = require("../lib/auth");
 
-    // 데모: 실제 요약 대신 URL만 에코
-    return res.json({
-      ok: true,
-      summary: `This would summarize: ${url}`
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "internal_error" });
-  }
-}
+const log = logger("summarize");
+const router = express.Router();
+
+/**
+ * POST /api/summarize
+ * Body: { text: string }
+ */
+router.post(
+  "/summarize",
+  requireApiKey,
+  asyncHandler(async (req, res) => {
+    const { text } = req.body || {};
+    if (!text || typeof text !== "string") {
+      return jsonErr(res, "Missing 'text' field", 400);
+    }
+
+    // Very simple summarizer (demo)
+    const summary = text.length > 200 ? text.slice(0, 180) + "..." : text;
+
+    log.info("Summarized text length:", text.length);
+    return jsonOK(res, { summary });
+  })
+);
+
+module.exports = router;
