@@ -1,7 +1,4 @@
-export function ok(data = {}) {
-  return { ok: true, ...data };
-}
-
-export function err(message = "error") {
-  return { ok: false, error: message };
+export function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
 }
