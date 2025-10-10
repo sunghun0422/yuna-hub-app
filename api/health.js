@@ -1,5 +1,5 @@
 // api/health.js
-module.exports = (req, res) => {
+export default function handler(req, res) {
   res.status(200).json({
     ok: true,
     service: "yuna-hub",
@@ -7,4 +7,4 @@ module.exports = (req, res) => {
     env: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString()
   });
-};
+}
