@@ -1,12 +1,11 @@
-import { Router } from "express";
-import summarize from "./summarize.js";
-import docs from "./docs.js";
-import calendar from "./calendar.js";
+// server/routes/index.js
 
-const r = Router();
+import calendar from './calendar.js';
+import docs from './docs.js';
+import summarize from './summarize.js';
 
-r.post("/summarize-url", summarize);
-r.get("/docs/search", docs);
-r.get("/calendar-daily", calendar);
-
-export default r;
+export const routes = {
+  '/calendar': calendar,
+  '/docs': docs,
+  '/summarize': summarize,
+};
