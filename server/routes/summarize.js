@@ -1,20 +1,17 @@
+import fetch from "node-fetch";
+
 export default async function summarize(req, res) {
   try {
-    const { text } = req.body;
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ error: "url is required" });
 
-    if (!text) {
-      return res.status(400).json({ ok: false, error: "Missing text to summarize." });
-    }
-
-    // 예시 요약 로직
-    const summary = text.length > 100 ? text.slice(0, 97) + "..." : text;
-
-    res.status(200).json({
+    // 데모: 실제 요약 대신 URL만 에코
+    return res.json({
       ok: true,
-      summary,
+      summary: `This would summarize: ${url}`
     });
-  } catch (error) {
-    console.error("Summarization error:", error);
-    res.status(500).json({ ok: false, error: "Internal Server Error" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "internal_error" });
   }
 }
