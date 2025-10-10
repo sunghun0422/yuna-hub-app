@@ -1,10 +1,12 @@
 import { Router } from "express";
-import calendar from "./calendar.js";
 import summarize from "./summarize.js";
+import docs from "./docs.js";
+import calendar from "./calendar.js";
 
-const router = Router();
+const r = Router();
 
-router.get("/calendar-daily", calendar);
-router.post("/summarize", summarize);
+r.post("/summarize-url", summarize);
+r.get("/docs/search", docs);
+r.get("/calendar-daily", calendar);
 
-export default router;
+export default r;
