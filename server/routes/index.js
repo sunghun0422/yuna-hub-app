@@ -1,14 +1,9 @@
-// server/routes/index.js
+import express from "express";
+import calendarRoute from "./calendar.js";
 
-const express = require("express");
 const router = express.Router();
 
-const calendarRoute = require("./calendar.js");
-const docsRoute = require("./docs.js");
-const summarizeRoute = require("./summarize.js");
-
+// ✅ 실제 API 경로 등록
 router.use("/calendar-daily", calendarRoute);
-router.use("/docs/search", docsRoute);
-router.use("/summarize-url", summarizeRoute);
 
-module.exports = router;
+export default router;
