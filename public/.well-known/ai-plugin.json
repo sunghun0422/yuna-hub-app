@@ -1,12 +1,17 @@
 {
   "schema_version": "v1",
-  "name_for_human": "Yuna Hub",
   "name_for_model": "yuna_hub",
-  "description_for_human": "Yuna's private memory and story hub app.",
-  "description_for_model": "Provides Lee Sung Hun's personal data, memory, and story integration endpoints for ChatGPT.",
-  "auth": { "type": "none" },
-  "api": { "type": "openapi", "url": "https://YOUR_DOMAIN/openapi.yaml" },
-  "logo_url": "https://YOUR_DOMAIN/logo.png",
-  "contact_email": "ops@yourdomain.com",
-  "legal_info_url": "https://YOUR_DOMAIN/legal"
+  "name_for_human": "유나 허브",
+  "description_for_model": "정리방, 기억방, 캘린더 등의 정보를 연결합니다.",
+  "description_for_human": "유나 허브 시스템에 연결해 일정을 정리하고 기억을 관리할 수 있습니다.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://your-domain.com/.well-known/openapi.yaml"
+  },
+  "logo_url": "https://your-domain.com/logo.png",
+  "contact_email": "you@example.com",
+  "legal_info_url": "https://your-domain.com/legal"
 }
