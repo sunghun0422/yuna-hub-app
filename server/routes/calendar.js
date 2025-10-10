@@ -1,14 +1,11 @@
 // server/routes/calendar.js
+import { ok } from "../lib/util.js";
 
-const express = require("express");
-const { ok } = require("../lib/util.js");
-
-const router = express.Router();
-
-router.get("/calendar-daily", async (req, res) => {
+export default async function calendar(req, res) {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
 
-  res.json(
+  // TODO: 추후 Google Calendar OAuth 연동 예정
+  return res.json(
     ok({
       date,
       items: [
@@ -18,6 +15,4 @@ router.get("/calendar-daily", async (req, res) => {
       ]
     })
   );
-});
-
-module.exports = router;
+}
