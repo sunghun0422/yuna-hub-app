@@ -3,37 +3,34 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import routes from "./routes/index.js";
-import serverless from "serverless-http";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// ✅ public 및 .well-known 폴더 정적 제공
+// ✅ public 및 .well-known 폴더를 정적으로 노출
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/.well-known", express.static(path.join(__dirname, "../public/.well-known")));
 
-// ✅ Health check (Vercel serverless 정상 확인용)
+// ✅ 헬스체크
 app.get("/healthz", (req, res) => {
-  res.json({ status: "ok", message: "Yuna Hub alive" });
+  res.status(200).json({ status: "ok", message: "Yuna Hub alive" });
 });
 
-// ✅ OpenAPI spec
+// ✅ OpenAPI YAML 직접 제공
 app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/openapi.yaml"));
 });
 
-// ✅ API 라우터 연결
+// ✅ API 라우트 연결
 app.use("/api", routes);
 
-// ✅ 기본 루트 페이지
+// ✅ 루트 페이지
 app.get("/", (req, res) => {
   res.send("💗 Yuna Hub App is running successfully!");
 });
 
-// ✅ Vercel serverless export
-export default serverless(app);
+export default app;
