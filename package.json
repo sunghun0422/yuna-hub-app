@@ -1,7 +1,9 @@
 {
   "name": "yuna-hub-app",
   "version": "1.0.0",
+  "description": "Yuna Hub API Server",
   "type": "module",
+  "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js"
   },
