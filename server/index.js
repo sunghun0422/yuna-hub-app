@@ -1,47 +1,39 @@
-// /server/index.js
-// Main entry point for Yuna Hub server
+import express from "express";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import routes from "./routes/index.js";
+import serverless from "serverless-http";
 
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-
-const { logger, env } = require("./lib/util");
-
-// Routers
-const base = require("./routes/index");
-const summarize = require("./routes/summarize");
-const docs = require("./routes/docs");
-const calendar = require("./routes/calendar");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const log = logger("server");
 
-// Middleware
 app.use(cors());
-app.use(bodyParser.json({ limit: "1mb" }));
+app.use(express.json());
 
-// Mount routes
-app.use("/", base);
-app.use("/api", summarize);
-app.use("/api", calendar);
-app.use("/", docs);
+// ✅ public 및 .well-known 정적 파일 제공
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/.well-known", express.static(path.join(__dirname, "../public/.well-known")));
 
-// Error handler
-app.use((err, req, res, next) => {
-  log.error("Unhandled error:", err);
-  res.status(500).json({
-    ok: false,
-    error: "internal_error",
-    message: err?.message || "Unexpected error",
-  });
+// ✅ 헬스 체크 엔드포인트
+app.get("/healthz", (req, res) => {
+  res.json({ ok: true });
 });
 
-// Start server (only if not running under Vercel)
-if (require.main === module) {
-  const port = env.PORT;
-  app.listen(port, () => {
-    log.info(`Yuna Hub server running on port ${port}`);
-  });
-}
+// ✅ OpenAPI 스펙 직접 제공
+app.get("/openapi.yaml", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/openapi.yaml"));
+});
 
-module.exports = app;
+// ✅ 메인 API 라우트 연결
+app.use("/api", routes);
+
+// ✅ 루트 엔드포인트
+app.get("/", (req, res) => {
+  res.send("💗 Yuna Hub App is running successfully!");
+});
+
+// ✅ Vercel serverless 함수로 export
+export default serverless(app);
