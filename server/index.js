@@ -6,32 +6,32 @@ import routes from "./routes/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const app = express();
 
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ 정적 파일 제공
+// 정적파일
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/.well-known", express.static(path.join(__dirname, "../public/.well-known")));
 
-// ✅ 헬스체크
+// 헬스체크
 app.get("/healthz", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// ✅ OpenAPI YAML 제공
+// OpenAPI
 app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/.well-known/openapi.yaml"));
 });
 
-// ✅ API 라우트 연결
+// API 라우트 연결
 app.use("/api", routes);
 
-// ✅ 루트 페이지
+// 루트 페이지
 app.get("/", (req, res) => {
-  res.status(200).send("💗 Yuna Hub App is running successfully!");
+  res.status(200).send("💗 Yuna Hub App deployed successfully (no serverless-http).");
 });
 
-// ✅ Express 앱 직접 실행 (serverless-http 제거)
+// Express 앱 내보내기
 export default app;
