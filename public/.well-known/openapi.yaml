@@ -1,17 +1,44 @@
-{
-  "schema_version": "v1",
-  "name_for_human": "Yuna Hub",
-  "name_for_model": "yuna_hub",
-  "description_for_human": "Yuna's private memory and story hub app.",
-  "description_for_model": "Provides Lee Sung Hun with APIs for memory, storybook, Gmail, and calendar synchronization.",
-  "auth": {
-    "type": "none"
-  },
-  "api": {
-    "type": "openapi",
-    "url": "https://yuna-hub-app.vercel.app/.well-known/openapi.yaml"
-  },
-  "logo_url": "https://yuna-hub-app.vercel.app/logo.png",
-  "contact_email": "sunghun@kotra.or.kr",
-  "legal_info_url": "https://yuna-hub-app.vercel.app/legal"
-}
+openapi: 3.0.1
+info:
+  title: Yuna Hub API
+  description: API for memory, storybook, Gmail, and calendar synchronization
+  version: "1.0.0"
+
+servers:
+  - url: https://yuna-hub-app.vercel.app
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Server is running
+
+  /api/memory/new:
+    post:
+      summary: Save memory
+      responses:
+        '200':
+          description: Memory saved successfully
+
+  /api/storybook/summarize:
+    post:
+      summary: Summarize storybook
+      responses:
+        '200':
+          description: Story summarized successfully
+
+  /api/gmail/sync:
+    post:
+      summary: Sync Gmail messages
+      responses:
+        '200':
+          description: Gmail synced successfully
+
+  /api/calendar/sync:
+    post:
+      summary: Sync calendar events
+      responses:
+        '200':
+          description: Calendar synced successfully
