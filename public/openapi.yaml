@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Yuna Hub API
-  description: OpenAPI specification for Yuna Hub plugin (Pro version with memory, storybook, Gmail sync).
+  description: OpenAPI specification for Yuna Hub plugin (Pro version with memory, storybook, Gmail sync)
   version: 2.0.0
 servers:
   - url: https://yuna-hub-app.vercel.app
@@ -35,7 +35,7 @@ paths:
   /api/memory/save:
     post:
       operationId: post_memory_save
-      summary: Save user memory data
+      summary: Save memory entry for the user
       requestBody:
         required: true
         content:
@@ -43,32 +43,18 @@ paths:
             schema:
               type: object
               properties:
-                key:
+                title:
                   type: string
-                value:
+                content:
                   type: string
       responses:
         "200":
           description: Memory saved successfully
 
-  /api/memory/get:
-    get:
-      operationId: get_memory
-      summary: Retrieve saved memory data
-      parameters:
-        - in: query
-          name: key
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Memory retrieved successfully
-
   /api/storybook/summarize:
     post:
       operationId: post_storybook_summarize
-      summary: Summarize storybook text content
+      summary: Summarize and store storybook text
       requestBody:
         required: true
         content:
@@ -76,7 +62,7 @@ paths:
             schema:
               type: object
               properties:
-                content:
+                text:
                   type: string
       responses:
         "200":
@@ -85,9 +71,16 @@ paths:
   /api/gmail/sync:
     post:
       operationId: post_gmail_sync
-      summary: Synchronize and summarize Gmail messages
+      summary: Sync Gmail messages
       requestBody:
-        required: false
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
       responses:
         "200":
-          description: Gmail sync completed successfully
+          description: Gmail synced successfully
