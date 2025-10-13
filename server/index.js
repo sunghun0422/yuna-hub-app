@@ -1,14 +1,9 @@
-import express from "express";
-import health from "./routes/health.js";
+import memoryRoute from "./routes/memory.js";
+import storybookRoute from "./routes/storybook.js";
+import gmailRoute from "./routes/gmail.js";
+import calendarRoute from "./routes/calendar.js";
 
-const app = express();
-
-// 기본 라우트
-app.get("/", (req, res) => {
-  res.json({ ok: true, message: "Yuna Hub 💗 root working" });
-});
-
-// 서브 라우트 연결
-app.use("/api/health", health);
-
-export default app;
+app.use("/api", memoryRoute);
+app.use("/api", storybookRoute);
+app.use("/api", gmailRoute);
+app.use("/api", calendarRoute);
