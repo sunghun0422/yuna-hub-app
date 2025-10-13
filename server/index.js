@@ -1,40 +1,37 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
-import serverless from "serverless-http";
 import routes from "./routes/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// ✅ public 경로 안전 처리
-const publicPath = resolve(process.cwd(), "public");
-app.use(express.static(publicPath));
-app.use("/.well-known", express.static(resolve(publicPath, ".well-known")));
+// ✅ 정적 파일 제공
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/.well-known", express.static(path.join(__dirname, "../public/.well-known")));
 
-// ✅ health check
+// ✅ 헬스체크
 app.get("/healthz", (req, res) => {
-  res.status(200).json({ status: "ok", message: "💗 Yuna Hub running fine" });
+  res.status(200).json({ status: "ok" });
 });
 
-// ✅ openapi.yaml serve
+// ✅ OpenAPI YAML 제공
 app.get("/openapi.yaml", (req, res) => {
-  res.sendFile(resolve(publicPath, ".well-known/openapi.yaml"));
+  res.sendFile(path.join(__dirname, "../public/.well-known/openapi.yaml"));
 });
 
-// ✅ API routes
+// ✅ API 라우트 연결
 app.use("/api", routes);
 
-// ✅ root route
+// ✅ 루트 페이지
 app.get("/", (req, res) => {
-  res.send("💗 Yuna Hub App is alive & connected!");
+  res.status(200).send("💗 Yuna Hub App is running successfully!");
 });
 
-// ✅ serverless export
-export const handler = serverless(app);
+// ✅ Express 앱 직접 실행 (serverless-http 제거)
 export default app;
