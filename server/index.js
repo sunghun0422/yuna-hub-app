@@ -11,29 +11,26 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 정적 파일
+// ✅ 정적 파일 제공
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/.well-known", express.static(path.join(__dirname, "../public/.well-known")));
 
-// 헬스 체크
+// ✅ 헬스체크
 app.get("/healthz", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// OpenAPI
+// ✅ OpenAPI
 app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/.well-known/openapi.yaml"));
 });
 
-// 메인 API 라우트
+// ✅ 메인 API 라우트
 app.use("/api", routes);
 
-// 루트 페이지
+// ✅ 루트 페이지
 app.get("/", (req, res) => {
-  res.status(200).send("💗 Yuna Hub App — Vercel Direct Express Handler working!");
+  res.status(200).send("💗 Yuna Hub App running successfully on Vercel!");
 });
 
-// ✅ Vercel 런타임용 기본 내보내기
-export default (req, res) => {
-  app(req, res);
-};
+export default app;
