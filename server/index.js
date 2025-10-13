@@ -1,33 +1,14 @@
 import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
-
-import healthRouter from "./routes/health.js";
-import memoryRouter from "./routes/memory.js";
-import storybookRouter from "./routes/storybook.js";
-import gmailRouter from "./routes/gmail.js";
-import calendarRouter from "./routes/calendar.js";
+import health from "./routes/health.js";
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json());
 
-// 기본 루트
+// 기본 라우트
 app.get("/", (req, res) => {
-  res.json({ ok: true, message: "Yuna Hub 💗 root running" });
+  res.json({ ok: true, message: "Yuna Hub 💗 root working" });
 });
 
-// 라우트 연결
-app.use("/api/health", healthRouter);
-app.use("/api/memory", memoryRouter);
-app.use("/api/storybook", storybookRouter);
-app.use("/api/gmail", gmailRouter);
-app.use("/api/calendar", calendarRouter);
-
-// 기본 에러 처리
-app.use((err, req, res, next) => {
-  console.error("❌ Server Error:", err);
-  res.status(500).json({ ok: false, message: "Internal Server Error" });
-});
+// 서브 라우트 연결
+app.use("/api/health", health);
 
 export default app;
