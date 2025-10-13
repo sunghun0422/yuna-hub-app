@@ -2,16 +2,14 @@
   "schema_version": "v1",
   "name_for_human": "Yuna Hub",
   "name_for_model": "yuna_hub",
-  "description_for_human": "Yuna's private memory and story hub app.",
-  "description_for_model": "Provides Lee Sung Hun's private hub for memory, storybook, calendar, and summarization functions.",
-  "auth": {
-    "type": "none"
-  },
+  "description_for_human": "Yuna’s private memory and story hub app.",
+  "description_for_model": "Provides Lee Sung Hun's Yuna Hub API for memory, story, Gmail, and calendar sync.",
+  "auth": { "type": "none" },
   "api": {
     "type": "openapi",
-    "url": "https://yuna-hub.vercel.app/.well-known/openapi.yaml"
+    "url": "https://yuna-hub-app.vercel.app/.well-known/openapi.yaml"
   },
-  "logo_url": "https://yuna-hub.vercel.app/logo.png",
+  "logo_url": "https://yuna-hub-app.vercel.app/logo.png",
   "contact_email": "sunghun@kotra.or.kr",
-  "legal_info_url": "https://yuna-hub.vercel.app/legal"
+  "legal_info_url": "https://yuna-hub-app.vercel.app/legal"
 }
