@@ -5,6 +5,7 @@ info:
   version: "1.0.0"
 servers:
   - url: https://yuna-hub-app.vercel.app
+
 paths:
   /api/health:
     get:
@@ -20,6 +21,14 @@ paths:
       summary: Save memory
       requestBody:
         required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: Memory text to save
       responses:
         '200':
           description: Memory saved successfully
@@ -30,6 +39,14 @@ paths:
       summary: Summarize storybook
       requestBody:
         required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                story:
+                  type: string
+                  description: Story text to summarize
       responses:
         '200':
           description: Story summarized successfully
@@ -40,6 +57,14 @@ paths:
       summary: Sync Gmail messages
       requestBody:
         required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  description: Number of messages to sync
       responses:
         '200':
           description: Gmail synced successfully
@@ -50,6 +75,14 @@ paths:
       summary: Sync calendar events
       requestBody:
         required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dateRange:
+                  type: string
+                  description: Date range to sync
       responses:
         '200':
           description: Calendar synced successfully
