@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: Yuna Hub API
-  description: OpenAPI specification for Yuna Hub plugin.
-  version: 1.0.0
+  description: OpenAPI specification for Yuna Hub plugin (Pro version with memory, storybook, Gmail sync).
+  version: 2.0.0
 servers:
   - url: https://yuna-hub-app.vercel.app
+
 paths:
   /healthz:
     get:
@@ -13,6 +14,7 @@ paths:
       responses:
         "200":
           description: OK
+
   /api/summarize-url:
     post:
       operationId: post_summarize_url
@@ -29,3 +31,63 @@ paths:
       responses:
         "200":
           description: Summarization successful
+
+  /api/memory/save:
+    post:
+      operationId: post_memory_save
+      summary: Save user memory data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+      responses:
+        "200":
+          description: Memory saved successfully
+
+  /api/memory/get:
+    get:
+      operationId: get_memory
+      summary: Retrieve saved memory data
+      parameters:
+        - in: query
+          name: key
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Memory retrieved successfully
+
+  /api/storybook/summarize:
+    post:
+      operationId: post_storybook_summarize
+      summary: Summarize storybook text content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Storybook summarized successfully
+
+  /api/gmail/sync:
+    post:
+      operationId: post_gmail_sync
+      summary: Synchronize and summarize Gmail messages
+      requestBody:
+        required: false
+      responses:
+        "200":
+          description: Gmail sync completed successfully
