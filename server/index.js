@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ 정적 파일
+// ✅ 정적 파일 노출
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/.well-known", express.static(path.join(__dirname, "../public/.well-known")));
 
@@ -26,14 +26,14 @@ app.get("/openapi.yaml", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/openapi.yaml"));
 });
 
-// ✅ 메인 라우트
+// ✅ API 라우트 연결
 app.use("/api", routes);
 
 // ✅ 루트 페이지
 app.get("/", (req, res) => {
-  res.send("💗 Yuna Hub App is running successfully!");
+  res.send("💗 Yuna Hub App is running successfully with Calendar Sync!");
 });
 
-// ✅ serverless handler 내보내기
+// ✅ Serverless handler export
 export const handler = serverless(app);
 export default app;
