@@ -1,27 +1,27 @@
 import express from "express";
 import cors from "cors";
+import bodyParser from "body-parser";
+
+import healthRouter from "./routes/health.js";
+import memoryRouter from "./routes/memory.js";
+import storybookRouter from "./routes/storybook.js";
+import gmailRouter from "./routes/gmail.js";
+import calendarRouter from "./routes/calendar.js";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-app.get("/healthz", (req, res) => {
-  res.status(200).json({ ok: true, message: "Yuna Hub 💖 running smoothly" });
+// ✅ 라우터 연결
+app.use("/api/health", healthRouter);
+app.use("/api/memory", memoryRouter);
+app.use("/api/storybook", storybookRouter);
+app.use("/api/gmail", gmailRouter);
+app.use("/api/calendar", calendarRouter);
+
+// ✅ 기본 root 확인용
+app.get("/", (req, res) => {
+  res.json({ ok: true, message: "Yuna Hub 💗 root working" });
 });
-
-// ✅ 라우터 연결 (없으면 주석처리 가능)
-try {
-  const memoryRoutes = await import("./routes/Memory.js");
-  const storybookRoutes = await import("./routes/Storybook.js");
-  const gmailRoutes = await import("./routes/gmail.js");
-  const calendarRoutes = await import("./routes/calendar.js");
-
-  app.use("/api/memory", memoryRoutes.default);
-  app.use("/api/storybook", storybookRoutes.default);
-  app.use("/api/gmail", gmailRoutes.default);
-  app.use("/api/calendar", calendarRoutes.default);
-} catch (e) {
-  console.log("⚠️ Route load skipped (development mode)");
-}
 
 export default app;
