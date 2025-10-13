@@ -9,35 +9,32 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
 
-// ✅ 미들웨어 설정
 app.use(cors());
 app.use(express.json());
 
-// ✅ 안전한 루트 경로 계산 (Vercel serverless 환경 대응)
-const rootDir = resolve(process.cwd(), "public");
+// ✅ public 경로 안전 처리
+const publicPath = resolve(process.cwd(), "public");
+app.use(express.static(publicPath));
+app.use("/.well-known", express.static(resolve(publicPath, ".well-known")));
 
-// ✅ 정적 파일 노출
-app.use(express.static(rootDir));
-app.use("/.well-known", express.static(resolve(rootDir, ".well-known")));
-
-// ✅ 헬스체크
+// ✅ health check
 app.get("/healthz", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Yuna Hub alive 💗" });
+  res.status(200).json({ status: "ok", message: "💗 Yuna Hub running fine" });
 });
 
-// ✅ OpenAPI YAML 직접 제공
+// ✅ openapi.yaml serve
 app.get("/openapi.yaml", (req, res) => {
-  res.sendFile(resolve(rootDir, "openapi.yaml"));
+  res.sendFile(resolve(publicPath, ".well-known/openapi.yaml"));
 });
 
-// ✅ API 라우트 연결
+// ✅ API routes
 app.use("/api", routes);
 
-// ✅ 루트 페이지
+// ✅ root route
 app.get("/", (req, res) => {
-  res.send("💗 Yuna Hub App is running successfully!");
+  res.send("💗 Yuna Hub App is alive & connected!");
 });
 
-// ✅ serverless handler 내보내기
+// ✅ serverless export
 export const handler = serverless(app);
 export default app;
