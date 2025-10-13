@@ -1,6 +1,15 @@
 {
   "version": 3,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
+    },
+    "server/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
+    { "src": "/healthz", "dest": "server/index.js" },
     { "src": "/(.*)", "dest": "server/index.js" }
   ]
 }
