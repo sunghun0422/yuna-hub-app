@@ -2,15 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/index.js",
+      "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/healthz", "dest": "/server/index.js" },
-    { "src": "/openapi.yaml", "dest": "/server/index.js" },
-    { "src": "/.well-known/(.*)", "dest": "/server/index.js" },
-    { "src": "/api/(.*)", "dest": "/server/index.js" },
-    { "src": "/(.*)", "dest": "/server/index.js" }
+    { "src": "/(.*)", "dest": "server.js" }
   ]
 }
