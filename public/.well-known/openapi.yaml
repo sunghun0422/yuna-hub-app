@@ -1,15 +1,14 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
-  title: Yuna Hub API
+  title: Yuna Hub Pro API
   description: API for memory, storybook, Gmail, and calendar synchronization
   version: "1.0.0"
-
 servers:
   - url: https://yuna-hub-app.vercel.app
-
 paths:
   /api/health:
     get:
+      operationId: get_api_health
       summary: Health check
       responses:
         '200':
@@ -17,28 +16,40 @@ paths:
 
   /api/memory/new:
     post:
+      operationId: post_api_memory_new
       summary: Save memory
+      requestBody:
+        required: false
       responses:
         '200':
           description: Memory saved successfully
 
   /api/storybook/summarize:
     post:
+      operationId: post_api_storybook_summarize
       summary: Summarize storybook
+      requestBody:
+        required: false
       responses:
         '200':
           description: Story summarized successfully
 
   /api/gmail/sync:
     post:
+      operationId: post_api_gmail_sync
       summary: Sync Gmail messages
+      requestBody:
+        required: false
       responses:
         '200':
           description: Gmail synced successfully
 
   /api/calendar/sync:
     post:
+      operationId: post_api_calendar_sync
       summary: Sync calendar events
+      requestBody:
+        required: false
       responses:
         '200':
           description: Calendar synced successfully
