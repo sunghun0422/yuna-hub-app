@@ -1,0 +1,2 @@
+# Placeholder for symbolic links or references to Hub #11 original files
+# This folder should only contain path shortcuts, not duplicates.
