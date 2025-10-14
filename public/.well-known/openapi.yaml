@@ -1,88 +1,111 @@
 openapi: 3.1.0
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 info:
-  title: Yuna Hub Pro API
-  description: API for memory, storybook, Gmail, and calendar synchronization
+  title: Yuna Hub API
   version: "1.0.0"
+  description: |
+    Private API for YunaHub (Lee Sung Hun). Health check and URL summarize endpoint.
 servers:
-  - url: https://yuna-hub-app.vercel.app
-
+  - url: https://yuna-hub-8gqcrtt95-lee-sung-hun-s-projects.vercel.app
+    description: Preview deployment
 paths:
   /api/health:
     get:
-      operationId: get_api_health
+      operationId: health
       summary: Health check
       responses:
         '200':
-          description: Server is running
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                ok:
+                  value:
+                    ok: true
+                    service: "yuna-hub"
+                    env: "preview"
+                    timestamp: "2025-10-14T09:29:14.666Z"
 
-  /api/memory/new:
+  /api/post_summarize_url:
     post:
-      operationId: post_api_memory_new
-      summary: Save memory
+      operationId: postSummarizeUrl
+      summary: Summarize a given URL
+      description: Accepts a URL and returns a short stub summary (placeholder).
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                content:
-                  type: string
-                  description: Memory text to save
+              $ref: '#/components/schemas/SummarizeRequest'
+            examples:
+              sample:
+                value:
+                  url: "https://edition.cnn.com/2025/10/13/world/solar-storm-earth-aurora-lights-scn/index.html"
       responses:
         '200':
-          description: Memory saved successfully
+          description: Summary generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarizeResponse'
+        '400':
+          description: Missing or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /api/storybook/summarize:
-    post:
-      operationId: post_api_storybook_summarize
-      summary: Summarize storybook
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                story:
-                  type: string
-                  description: Story text to summarize
-      responses:
-        '200':
-          description: Story summarized successfully
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        ok: { type: boolean }
+        service: { type: string }
+        env: { type: string }
+        timestamp: { type: string, format: date-time }
+      required: [ok, service, env, timestamp]
 
-  /api/gmail/sync:
-    post:
-      operationId: post_api_gmail_sync
-      summary: Sync Gmail messages
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                count:
-                  type: integer
-                  description: Number of messages to sync
-      responses:
-        '200':
-          description: Gmail synced successfully
+    SummarizeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Target URL to summarize
+        meta:
+          type: object
+          additionalProperties: true
+          description: Optional metadata
+      required: [url]
 
-  /api/calendar/sync:
-    post:
-      operationId: post_api_calendar_sync
-      summary: Sync calendar events
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dateRange:
-                  type: string
-                  description: Date range to sync
-      responses:
-        '200':
-          description: Calendar synced successfully
+    SummarizeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        ok: { type: boolean }
+        summary: { type: string }
+        source: { type: string, format: uri }
+        meta:
+          type: [object, "null"]
+          additionalProperties: true
+        timestamp: { type: string, format: date-time }
+      required: [ok, summary, source, timestamp]
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        ok: { type: boolean, default: false }
+        error: { type: string }
+      required: [ok, error]
