@@ -7,7 +7,7 @@ on:
       - "DB/01_HUB/YeoSi_YunaHub/12/*.pdf"
 
 permissions:
-  contents: write   # ✅ 이 줄 추가 (push 권한 허용)
+  contents: write
 
 jobs:
   auto-commit:
