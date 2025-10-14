@@ -1,0 +1,24 @@
+name: Yuna Auto Commit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "DB/01_HUB/YeoSi_YunaHub/12/*.pdf"
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Commit and Push PDF Updates
+        run: |
+          git config --global user.name "YunaHub-Auto"
+          git config --global user.email "auto@yuna-hub.app"
+          git add DB/01_HUB/YeoSi_YunaHub/12/*.pdf
+          git commit -m "auto_summary_en: Auto-added updated summary PDF" || echo "No changes to commit"
+          git push origin dev_v12
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
