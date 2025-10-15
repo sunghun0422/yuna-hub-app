@@ -87,3 +87,4 @@ last_update: "2025-10-15"
 “유나허브프로”가 그 내용을 자동으로 요약해서 알려줄 거야.  
 
 지금 바로 저 코드 붙여서 커밋해볼래?
+[Test] Trigger validation from Yuna Hub Pro – 2025-10-15 Night Check
