@@ -1,4 +1,4 @@
-name: Yuna Auto Commit
+name: Yuna Auto Commit & Summary Notify
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - dev_v12
     paths:
       - "DB/01_HUB/YeoSi_YunaHub/12/*.pdf"
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,28 +13,27 @@ permissions:
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Commit and Push PDF Updates
         run: |
-          git config --global user.name "YunaHub Auto Commit Bot"
-          git config --global user.email "autobot@yuna-hub.dev"
+          git config --global user.name "YunaHub AutoCommit"
+          git config --global user.email "auto@yuna-hub.app"
           git add DB/01_HUB/YeoSi_YunaHub/12/*.pdf
-          git commit -m "auto_summary_en: Auto-added updated summary PDF (test run)" || echo "No changes to commit"
+          git commit -m "auto_summary_en: Auto-added updated summary PDF (YunaHub Auto)"
           git push origin dev_v12
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  vercel-deploy:
+  notify-summary:
     needs: auto-commit
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Vercel Deployment
+      - name: Send Notification to YunaHub
         run: |
-          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_8gqcrtt95_yuna-hub?buildCache=false" \
-            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+          echo "🚀 Sending summary upload notification..."
+          curl -X POST https://yuna-hub.vercel.app/api/notify \
             -H "Content-Type: application/json" \
-            -d '{"target":"production"}'
+            -d "{\"message\": \"📄 New summary PDF uploaded to dev_v12\", \"file\": \"${{ github.event.head_commit.message }}\", \"commit\": \"${{ github.sha }}\"}"
