@@ -1,4 +1,4 @@
-name: Yuna Auto Commit & Summary Notify
+name: Yuna Auto Commit & Gmail Notify
 
 on:
   push:
@@ -32,3 +32,24 @@ jobs:
           curl -X POST https://yuna-hub-app.vercel.app/api/github-webhook \
           -H "Content-Type: application/json" \
           -d '{"event":"pdf_updated","branch":"dev_v12"}'
+
+      - name: Send Gmail Notification
+        run: |
+          echo "Subject: ✅ YunaHub Auto Commit Summary Notification" > email.txt
+          echo "" >> email.txt
+          echo "Repository: ${{ github.repository }}" >> email.txt
+          echo "Branch: ${{ github.ref_name }}" >> email.txt
+          echo "Commit by: ${{ github.actor }}" >> email.txt
+          echo "Workflow Status: SUCCESS ✅" >> email.txt
+          echo "" >> email.txt
+          echo "A new summary PDF has been uploaded to YunaHub and automatically redeployed 🚀" >> email.txt
+          echo "" >> email.txt
+          echo "Time: $(date)" >> email.txt
+          echo "Triggered by: dev_v12 auto-commit action" >> email.txt
+
+          curl -s --url 'smtps://smtp.gmail.com:465' \
+          --ssl-reqd \
+          --mail-from 'godlee0422@gmail.com' \
+          --mail-rcpt 'godlee0422@gmail.com' \
+          --user 'godlee0422@gmail.com:${{ secrets.GMAIL_APP_PASSWORD }}' \
+          -T email.txt
