@@ -23,6 +23,7 @@ export default async function handler(req, res) {
         const parsed = await pdfParse(Buffer.from(buffer));
         summaries.push({
           name: file.name,
+          type: "pdf",
           text: parsed.text.substring(0, 1000) + "..."
         });
       } else if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {
@@ -30,6 +31,7 @@ export default async function handler(req, res) {
         const text = await textResponse.text();
         summaries.push({
           name: file.name,
+          type: "text",
           text: text.substring(0, 1000) + "..."
         });
       }
@@ -37,7 +39,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       ok: true,
-      count: summaries.length,
+      total_files: summaries.length,
       summaries,
       timestamp: new Date().toISOString()
     });
