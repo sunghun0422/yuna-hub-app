@@ -1,0 +1,72 @@
+name: YunaHub Full Automation Pipeline
+
+on:
+  push:
+    branches:
+      - dev_v12
+    paths:
+      - "DB/01_HUB/YeoSi_YunaHub/12/*.pdf"
+
+permissions:
+  contents: write
+
+jobs:
+  auto-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Updated INDEX_12.csv
+        run: |
+          echo "file_name,file_path,upload_time" > DB/01_HUB/YeoSi_YunaHub/12/INDEX_12.csv
+          find DB/01_HUB/YeoSi_YunaHub/12 -type f -name "*.pdf" | while read file; do
+            echo "$(basename "$file"),$file,$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> DB/01_HUB/YeoSi_YunaHub/12/INDEX_12.csv
+          done
+
+      - name: Commit Updated Index
+        run: |
+          git config --global user.name "YunaHub AutoIndexer"
+          git config --global user.email "indexer@yunahub.app"
+          git add DB/01_HUB/YeoSi_YunaHub/12/INDEX_12.csv
+          git commit -m "auto_index_update: refreshed INDEX_12.csv" || echo "No index changes"
+          git push origin dev_v12
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-summary:
+    needs: auto-index
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Summary (via YunaHub API)
+        run: |
+          curl -X POST https://yuna-hub-app.vercel.app/api/post_summarize_url \
+          -H "Content-Type: application/json" \
+          -d '{"event":"pdf_updated","branch":"dev_v12"}'
+
+  notify:
+    needs: auto-summary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Gmail Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: "godlee0422@gmail.com"
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "[YunaHub] 🚀 Full Auto Pipeline Executed Successfully"
+          to: "godlee0422@gmail.com"
+          from: "YunaHub System <godlee0422@gmail.com>"
+          body: |
+            ✅ 자동 파이프라인 실행 완료!
+
+            1️⃣ INDEX_12.csv 최신화 완료  
+            2️⃣ PDF 요약 전송 완료  
+            3️⃣ 알림 메일 전송 완료  
+
+            📁 경로: DB/01_HUB/YeoSi_YunaHub/12/  
+            🔗 GitHub Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            — From YunaHub Pro 🪽
