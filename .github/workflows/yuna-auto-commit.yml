@@ -1,10 +1,12 @@
 name: Yuna Auto Commit
 
 on:
-  workflow_dispatch:
   push:
+    branches:
+      - dev_v12
     paths:
       - "DB/01_HUB/YeoSi_YunaHub/12/*.pdf"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,16 +14,28 @@ permissions:
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Commit and Push PDF Updates
         run: |
-          git config --global user.name "YunaHub-Auto"
-          git config --global user.email "auto@yuna-hub.app"
+          git config --global user.name "YunaHub Auto Commit Bot"
+          git config --global user.email "autobot@yuna-hub.dev"
           git add DB/01_HUB/YeoSi_YunaHub/12/*.pdf
-          git commit -m "auto_summary_en: Auto-added updated summary PDF" || echo "No changes to commit"
+          git commit -m "auto_summary_en: Auto-added updated summary PDF (test run)" || echo "No changes to commit"
           git push origin dev_v12
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  vercel-deploy:
+    needs: auto-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Deployment
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_8gqcrtt95_yuna-hub?buildCache=false" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"target":"production"}'
