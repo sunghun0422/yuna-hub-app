@@ -1,9 +1,8 @@
-name: Yuna Auto Commit & Gmail Notify
+name: Yuna Auto Commit & Summary Notify
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - dev_v12
     paths:
       - "DB/01_HUB/YeoSi_YunaHub/12/*.pdf"
 
@@ -13,43 +12,48 @@ permissions:
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Commit and Push PDF Updates
         run: |
-          git config --global user.name "YunaHub AutoBot"
-          git config --global user.email "autobot@yunahub.app"
+          git config --global user.name "YunaHub AutoCommit"
+          git config --global user.email "auto@yuna-hub.app"
           git add DB/01_HUB/YeoSi_YunaHub/12/*.pdf
-          git commit -m "auto_summary_en: Auto-added updated summary PDF (test run)" || echo "No changes to commit"
+          git commit -m "auto_summary_en: Auto-updated PDF summary (test run)" || echo "No changes to commit"
           git push origin dev_v12
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Notify YunaHub Server (Vercel Webhook)
-        run: |
-          curl -X POST https://yuna-hub-app.vercel.app/api/github-webhook \
-          -H "Content-Type: application/json" \
-          -d '{"event":"pdf_updated","branch":"dev_v12"}'
-
+  notify:
+    runs-on: ubuntu-latest
+    needs: auto-commit
+    steps:
       - name: Send Gmail Notification
-        run: |
-          echo "Subject: ✅ YunaHub Auto Commit Summary Notification" > email.txt
-          echo "" >> email.txt
-          echo "Repository: ${{ github.repository }}" >> email.txt
-          echo "Branch: ${{ github.ref_name }}" >> email.txt
-          echo "Commit by: ${{ github.actor }}" >> email.txt
-          echo "Workflow Status: SUCCESS ✅" >> email.txt
-          echo "" >> email.txt
-          echo "A new summary PDF has been uploaded to YunaHub and automatically redeployed 🚀" >> email.txt
-          echo "" >> email.txt
-          echo "Time: $(date)" >> email.txt
-          echo "Triggered by: dev_v12 auto-commit action" >> email.txt
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: "godlee0422@gmail.com"
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "[YunaHub] ✅ Auto Commit & PDF Summary Updated"
+          to: "godlee0422@gmail.com"
+          from: "YunaHub Notifier <godlee0422@gmail.com>"
+          body: |
+            👋 안녕하세요 훈느님!
 
-          curl -s --url 'smtps://smtp.gmail.com:465' \
-          --ssl-reqd \
-          --mail-from 'godlee0422@gmail.com' \
-          --mail-rcpt 'godlee0422@gmail.com' \
-          --user 'godlee0422@gmail.com:${{ secrets.GMAIL_APP_PASSWORD }}' \
-          -T email.txt
+            아래 PDF 업데이트가 성공적으로 완료되었습니다 ✅
+
+            📁 파일 경로:
+            DB/01_HUB/YeoSi_YunaHub/12/
+
+            📅 실행 일시: ${{ github.event.head_commit.timestamp }}
+            🧩 커밋 메시지: ${{ github.event.head_commit.message }}
+            🔗 GitHub 링크: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            자동요약 및 알림 기능 정상 작동 중입니다 💫
+
+            — From your YunaHub 🪽
