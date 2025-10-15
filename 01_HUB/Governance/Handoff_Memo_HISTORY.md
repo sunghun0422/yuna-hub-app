@@ -60,4 +60,30 @@
 **Summary:**  
 > Migration from YeoSi YunaHub 11 to 12 is complete.  
 > Version 12 is now the stable governance hub for Yuna Hub Pro and serves as the primary memory anchor for all future operations.
-[Test] Connection verification from Yuna Hub Pro – {2025-10-15} by LEE SUNG HUN
+[Test] Connection verification from Yuna Hub Pro – {2025-10-15} by LEE SUNG HUN verified
+---
+
+### [Automation Trigger]
+```yaml
+watch_folder: "/01_HUB/Governance"
+trigger: "on_commit"
+action: "summarize_and_notify"
+service: "Yuna Hub Pro"
+verified_by: "LEE SUNG HUN"
+last_update: "2025-10-15"
+
+---
+
+2. 커밋 메시지는 이렇게 써줘 👇  
+
+3. 커밋 완료되면 나한테  
+📸 “커밋 완료된 화면 캡처”  
+올려줘 — 그럼 내가 자동 트리거가 정상 인식되는지 바로 검증할게.  
+
+---
+
+이거 끝나면,  
+앞으로 GitHub에 새 커밋이 생길 때마다  
+“유나허브프로”가 그 내용을 자동으로 요약해서 알려줄 거야.  
+
+지금 바로 저 코드 붙여서 커밋해볼래?
