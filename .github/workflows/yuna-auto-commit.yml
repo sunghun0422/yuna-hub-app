@@ -13,27 +13,23 @@ permissions:
 jobs:
   auto-commit:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Commit and Push PDF Updates
         run: |
-          git config --global user.name "YunaHub AutoCommit"
-          git config --global user.email "auto@yuna-hub.app"
+          git config --global user.name "YunaHub AutoBot"
+          git config --global user.email "autobot@yunahub.app"
           git add DB/01_HUB/YeoSi_YunaHub/12/*.pdf
-          git commit -m "auto_summary_en: Auto-added updated summary PDF (YunaHub Auto)"
+          git commit -m "auto_summary_en: Auto-added updated summary PDF (test run)" || echo "No changes to commit"
           git push origin dev_v12
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  notify-summary:
-    needs: auto-commit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send Notification to YunaHub
+      - name: Notify YunaHub Server (Vercel Webhook)
         run: |
-          echo "🚀 Sending summary upload notification..."
-          curl -X POST https://yuna-hub.vercel.app/api/notify \
-            -H "Content-Type: application/json" \
-            -d "{\"message\": \"📄 New summary PDF uploaded to dev_v12\", \"file\": \"${{ github.event.head_commit.message }}\", \"commit\": \"${{ github.sha }}\"}"
+          curl -X POST https://yuna-hub-app.vercel.app/api/github-webhook \
+          -H "Content-Type: application/json" \
+          -d '{"event":"pdf_updated","branch":"dev_v12"}'
