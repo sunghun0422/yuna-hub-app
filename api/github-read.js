@@ -1,11 +1,9 @@
-// /api/github-read.js
 import { Octokit } from "@octokit/rest";
+import pdf from "pdf-parse";
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
   try {
-    const pdfParse = (await import("pdf-parse")).default; // ✅ 동적 import
-
     const octokit = new Octokit({ auth: process.env.GH_TOKEN });
     const owner = "sunghun0422";
     const repo = "yuna-hub-app";
@@ -18,11 +16,11 @@ export default async function handler(req, res) {
       if (file.name.endsWith(".pdf")) {
         const response = await fetch(file.download_url);
         const arrayBuffer = await response.arrayBuffer();
-        const parsed = await pdfParse(Buffer.from(arrayBuffer));
+        const parsed = await pdf(Buffer.from(arrayBuffer));
         summaries.push({
           name: file.name,
           type: "pdf",
-          text: parsed.text.slice(0, 500).replace(/\n+/g, " ") + "...",
+          text: parsed.text.slice(0, 500).replace(/\n+/g, " ") + "..."
         });
       } else if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {
         const response = await fetch(file.download_url);
@@ -30,14 +28,14 @@ export default async function handler(req, res) {
         summaries.push({
           name: file.name,
           type: "text",
-          text: text.slice(0, 500).replace(/\n+/g, " ") + "...",
+          text: text.slice(0, 500).replace(/\n+/g, " ") + "..."
         });
       }
     }
 
     const header = "filename,type,summary\n";
-    const csvRows = summaries.map(
-      (s) => `"${s.name}","${s.type}","${s.text.replace(/"/g, '""')}"`
+    const csvRows = summaries.map(s =>
+      `"${s.name}","${s.type}","${s.text.replace(/"/g, '""')}"`
     );
     const csvContent = header + csvRows.join("\n");
 
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
       const { data: existing } = await octokit.repos.getContent({
         owner,
         repo,
-        path: `${path}/manifest_latest.csv`,
+        path: `${path}/manifest_latest.csv`
       });
       existingSha = existing.sha;
     } catch {
@@ -61,23 +59,18 @@ export default async function handler(req, res) {
       content: Buffer.from(csvContent, "utf8").toString("base64"),
       sha: existingSha || undefined,
       committer: { name: "YunaHub AutoCommit Bot", email: "auto@yuna-hub.app" },
-      author: { name: "YunaHub Bot", email: "auto@yuna-hub.app" },
+      author: { name: "YunaHub Bot", email: "auto@yuna-hub.app" }
     });
 
     res.status(200).json({
       ok: true,
       total_files: summaries.length,
       updated_manifest: true,
-      summaries,
       manifest_path: `${path}/manifest_latest.csv`,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error("❌ Error:", error);
-    res.status(500).json({
-      ok: false,
-      message: error.message,
-      stack: error.stack,
-    });
+    res.status(500).json({ ok: false, message: error.message, stack: error.stack });
   }
 }
