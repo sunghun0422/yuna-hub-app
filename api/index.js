@@ -1,34 +1,29 @@
 // /api/index.js
-// favicon.ico, 루트 /api 요청 시 500 방지 및 라우트 안내용
-
 export default function handler(req, res) {
-  const { url } = req;
+  const url = req.url || "";
 
-  // favicon.ico 요청 처리
-  if (url === "/favicon.ico") {
-    res.status(204).end(); // No Content
-    return;
+  // ✅ favicon 요청 무시
+  if (url.includes("favicon.ico")) {
+    return res.status(204).end();
   }
 
-  // 루트 경로(/api)만 안내 메시지 표시
+  // ✅ 정상 응답
   if (url === "/api" || url === "/api/") {
-    res.status(200).json({
+    return res.status(200).json({
       ok: true,
       message: "YunaHub API server is running ✅",
       routes: {
         githubRead: "/api/github-read",
         githubSync: "/api/github-sync",
-        summarize: "/api/post_summarize_url"
       },
       timestamp: new Date().toISOString(),
     });
-    return;
   }
 
-  // 나머지 경로는 패스 → 다른 함수(API)에서 처리되게 함
-  res.status(404).json({
+  // ✅ 나머지는 Not Found 처리
+  return res.status(404).json({
     ok: false,
-    message: "Not Found (handled by /api/index.js)",
+    message: `Not Found: ${url}`,
     hint: "Try /api/github-read or /api/github-sync",
   });
 }
