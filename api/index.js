@@ -1,7 +1,14 @@
 export default function handler(req, res) {
-  // 루트 확인용
-  if (req.url === '/api/' || req.url === '/api') {
-    res.status(200).json({
+  const url = req.url || "";
+
+  // ✅ favicon 무시
+  if (url.includes("favicon.ico")) {
+    return res.status(204).end();
+  }
+
+  // ✅ 루트 확인용
+  if (url === "/api" || url === "/api/") {
+    return res.status(200).json({
       ok: true,
       message: "YunaHub API server is running ✅",
       routes: {
@@ -11,13 +18,20 @@ export default function handler(req, res) {
       },
       timestamp: new Date().toISOString()
     });
-    return;
   }
 
-  // 다른 라우트는 자동 라우팅에 맡기기
+  // ✅ /api 하위 경로는 자동 라우팅에 맡김
+  if (url.startsWith("/api/")) {
+    return res.status(404).json({
+      ok: false,
+      message: `No handler in index.js for this path: ${url}`,
+      hint: "This route should be handled by its own file in /api/"
+    });
+  }
+
+  // ✅ 기타 비-API 요청
   res.status(404).json({
     ok: false,
-    message: "Not Found (handled by /api/index.js)",
-    hint: "Try /api/github-read or /api/github-sync"
+    message: "Not Found"
   });
 }
