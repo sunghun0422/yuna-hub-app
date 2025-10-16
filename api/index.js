@@ -1,29 +1,23 @@
-// /api/index.js
 export default function handler(req, res) {
-  const url = req.url || "";
-
-  // ✅ favicon 요청 무시
-  if (url.includes("favicon.ico")) {
-    return res.status(204).end();
-  }
-
-  // ✅ 정상 응답
-  if (url === "/api" || url === "/api/") {
-    return res.status(200).json({
+  // 루트 확인용
+  if (req.url === '/api/' || req.url === '/api') {
+    res.status(200).json({
       ok: true,
       message: "YunaHub API server is running ✅",
       routes: {
         githubRead: "/api/github-read",
         githubSync: "/api/github-sync",
+        summarize: "/api/post_summarize_url"
       },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
+    return;
   }
 
-  // ✅ 나머지는 Not Found 처리
-  return res.status(404).json({
+  // 다른 라우트는 자동 라우팅에 맡기기
+  res.status(404).json({
     ok: false,
-    message: `Not Found: ${url}`,
-    hint: "Try /api/github-read or /api/github-sync",
+    message: "Not Found (handled by /api/index.js)",
+    hint: "Try /api/github-read or /api/github-sync"
   });
 }
