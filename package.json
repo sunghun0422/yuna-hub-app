@@ -3,14 +3,28 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "dependencies": {
-    "@octokit/rest": "^20.0.0",
+    "@octokit/rest": "^21.0.0",
     "pdf-parse": "^1.1.1",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "express": "^4.19.2",
+    "serverless-http": "^3.2.0",
+    "dotenv": "^16.4.5"
   },
   "scripts": {
-    "vercel-build": "echo 'Vercel build triggered'"
-  }
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "license": "MIT",
+  "description": "Yuna Hub Pro serverless API running on Vercel (Express mode, Node 22.x).",
+  "keywords": [
+    "vercel",
+    "express",
+    "api",
+    "serverless",
+    "yuna-hub"
+  ],
+  "author": "Lee Sung Hun"
 }
