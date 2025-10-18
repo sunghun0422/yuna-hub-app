@@ -10,7 +10,6 @@
   },
   "routes": [
     { "src": "^/api/(.*)$", "dest": "/api/$1" },
-    { "src": "^/$", "dest": "/api/index.js" }
-  ],
-  "outputDirectory": "."
+    { "src": "/", "dest": "/api/index.js" }
+  ]
 }
