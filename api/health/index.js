@@ -1,10 +1,10 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
     res.setHeader("Content-Type", "application/json");
     res.status(200).json({
       status: "healthy",
       message: "Yuna Hub API active",
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error("Health check failed:", error);
@@ -13,4 +13,4 @@ export default async function handler(req, res) {
       message: error.message || "Unknown error"
     });
   }
-}
+};
