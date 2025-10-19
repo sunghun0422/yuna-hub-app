@@ -1,30 +1,28 @@
 {
   "name": "yuna-hub-app",
   "version": "1.0.0",
+  "description": "Yuna Hub App – Node.js 기반 개인 비서/스토리 허브",
+  "main": "api/index.js",
   "type": "module",
-  "engines": {
-    "node": "22.x"
-  },
-  "dependencies": {
-    "@octokit/rest": "^21.0.0",
-    "pdf-parse": "^1.1.1",
-    "node-fetch": "^3.3.2",
-    "express": "^4.19.2",
-    "serverless-http": "^3.2.0",
-    "dotenv": "^16.4.5"
-  },
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "vercel dev",
+    "start": "node api/index.js",
+    "build": "echo 'Vercel handles build automatically'"
   },
-  "license": "MIT",
-  "description": "Yuna Hub Pro serverless API running on Vercel (Express mode, Node 22.x).",
   "keywords": [
     "vercel",
-    "express",
+    "node",
     "api",
-    "serverless",
     "yuna-hub"
   ],
-  "author": "Lee Sung Hun"
+  "author": "sunghun0422",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/node": "^3.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
 }
