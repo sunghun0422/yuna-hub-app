@@ -1,29 +1,15 @@
 {
   "name": "yuna-hub-app",
-  "version": "1.0.1",
-  "description": "Yuna Hub App – Node.js 기반 개인 비서/스토리 허브 (Stable Node20)",
+  "version": "1.0.0",
+  "main": "index.js",
   "type": "module",
-  "main": "api/index.js",
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "node api/index.js",
-    "build": "echo 'Vercel handles build automatically'"
-  },
-  "keywords": [
-    "vercel",
-    "node",
-    "api",
-    "yuna-hub",
-    "stable"
-  ],
-  "author": "sunghun0422",
-  "license": "MIT",
-  "dependencies": {
-    "@vercel/node": "^4.0.0",
-    "dotenv": "^16.4.5"
-  },
-  "devDependencies": {},
   "engines": {
-    "node": ">=20"
+    "node": "18.x"
+  },
+  "dependencies": {
+    "@vercel/node": "3.0.10"
+  },
+  "scripts": {
+    "start": "node api/health.js"
   }
 }
