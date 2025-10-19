@@ -1,4 +1,3 @@
-// /api/health.js
 export default function handler(req, res) {
   try {
     res.status(200).json({
