@@ -1,15 +1,16 @@
-module.exports = (req, res) => {
+// /api/health.js
+export default function handler(req, res) {
   try {
     res.status(200).json({
       status: "healthy",
       message: "Yuna Hub API active",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Health check failed:", error);
     res.status(500).json({
       status: "error",
-      message: error.message || "Unknown error"
+      message: error.message || "Unknown error",
     });
   }
-};
+}
