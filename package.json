@@ -1,18 +1,23 @@
 {
-  "name": "yuna-hub-app",
+  "name": "yuna-hub-api",
   "version": "1.0.0",
-  "description": "YunaHub Pro - Node.js API 기반 서버",
-  "main": "api/index.js",
-  "engines": {
-    "node": "20.x"
-  },
+  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "start": "node api/index.js"
+    "start": "node server/routes/index.js",
+    "dev": "nodemon server/routes/index.js"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "dependencies": {
-    "@octokit/rest": "^19.0.7",
-    "node-fetch": "^3.3.2",
-    "pdf-parse": "^1.1.1"
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.8"
   },
-  "license": "MIT"
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
 }
