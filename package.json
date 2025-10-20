@@ -1,15 +1,12 @@
 {
   "name": "yuna-hub-app",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "1.0.3",
+  "description": "Yuna Hub Stable Main Hub (YeoSi 13)",
   "type": "module",
-  "engines": {
-    "node": "18.x"
-  },
+  "engines": { "node": "18.x" },
   "dependencies": {
-    "@vercel/node": "3.0.10"
+    "@vercel/node": "3.0.10",
+    "dotenv": "^16.4.5"
   },
-  "scripts": {
-    "start": "node api/health.js"
-  }
+  "scripts": { "start": "node api/health.js" }
 }
