@@ -2,7 +2,7 @@ export default function handler(req, res) {
   try {
     res.status(200).json({
       status: "healthy",
-      message: "Yuna Hub 13 API active",
+      message: "Yuna Hub API v13 active",
       timestamp: new Date().toISOString()
     });
   } catch (error) {
