@@ -1,20 +1,18 @@
 {
   "name": "yuna-hub-app",
-  "version": "1.0.1",
-  "description": "Yuna Hub App for API integration and health checks.",
-  "main": "index.js",
+  "version": "1.0.0",
+  "description": "YunaHub Pro - Node.js API 기반 서버",
+  "main": "api/index.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
-    "start": "node server/routes/index.js",
-    "dev": "vercel dev",
-    "build": "vercel build"
+    "start": "node api/index.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "axios": "^1.6.8",
-    "dotenv": "^16.4.5"
-  },
-  "engines": {
-    "node": "22.x"
+    "@octokit/rest": "^19.0.7",
+    "node-fetch": "^3.3.2",
+    "pdf-parse": "^1.1.1"
   },
   "license": "MIT"
 }
