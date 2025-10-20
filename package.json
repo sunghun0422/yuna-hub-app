@@ -1,16 +1,20 @@
 {
   "name": "yuna-hub-app",
-  "version": "1.0.0",
-  "description": "Yuna Hub v13 - API only mode",
+  "version": "1.0.1",
+  "description": "Yuna Hub App for API integration and health checks.",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "dev": "vercel dev"
+    "start": "node server/routes/index.js",
+    "dev": "vercel dev",
+    "build": "vercel build"
   },
   "dependencies": {
-    "dotenv": "^16.3.1"
+    "express": "^4.19.2",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5"
   },
   "engines": {
-    "node": "18.x"
-  }
+    "node": "22.x"
+  },
+  "license": "MIT"
 }
