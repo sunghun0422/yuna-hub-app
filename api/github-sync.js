@@ -1,6 +1,3 @@
-// ✅ /api/github-sync.js
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
   try {
     // ✅ 1. 환경변수 (Vercel에 GH_TOKEN 등록되어 있어야 함)
@@ -27,7 +24,7 @@ export default async function handler(req, res) {
     // ✅ 3. GitHub API URL 생성
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
 
-    // ✅ 4. Fetch 요청
+    // ✅ 4. Fetch 요청 (내장 fetch 사용)
     const response = await fetch(apiUrl, {
       headers: {
         Authorization: `token ${token}`,
