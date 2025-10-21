@@ -6,6 +6,7 @@ export default async function handler(req, res) {
     const branch = "dev_v13";
     const token = process.env.GH_TOKEN;
 
+    // GitHub API 엔드포인트
     const apiUrl = `https://api.github.com/repos/${repo}/contents?ref=${branch}`;
     const response = await fetch(apiUrl, {
       headers: {
@@ -14,17 +15,34 @@ export default async function handler(req, res) {
       },
     });
 
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`GitHub API error: ${response.status} - ${errText}`);
+    }
+
     const data = await response.json();
 
     if (!Array.isArray(data)) {
       return res
         .status(500)
-        .json({ ok: false, message: "GitHub API returned unexpected result", data });
+        .json({ ok: false, message: "Unexpected GitHub response", data });
     }
 
-    const files = data.map((item) => item.name);
-    res.status(200).json({ ok: true, repo, branch, count: files.length, files });
-  } catch (err) {
-    res.status(500).json({ ok: false, message: err.message });
+    const files = data.map((item) => ({
+      name: item.name,
+      path: item.path,
+      type: item.type,
+    }));
+
+    res.status(200).json({
+      ok: true,
+      repo,
+      branch,
+      fileCount: files.length,
+      files: files.slice(0, 10),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ ok: false, message: error.message });
   }
 }
