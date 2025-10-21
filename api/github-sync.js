@@ -1,76 +1,83 @@
 // /api/github-sync.js
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
-  console.log("🟢 [github-sync] Function started");
+  if (req.method !== "POST" && req.method !== "PUT") {
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+  }
 
   try {
-    // 요청 본문 로깅
-    console.log("📩 Incoming request body:", req.body);
+    const { repo, branch = "main", path, content, message = "yuna-hub sync" } = req.body || {};
 
-    const { repo, branch, path, content } = req.body;
+    if (!repo) return res.status(400).json({ ok: false, error: "`repo` is required" });
+    if (!path) return res.status(400).json({ ok: false, error: "`path` is required" });
+    if (typeof content !== "string") {
+      return res.status(400).json({ ok: false, error: "`content` must be a string" });
+    }
 
-    // 환경변수 확인
+    const [owner, repoName] = String(repo).split("/");
+    if (!owner || !repoName) {
+      return res.status(400).json({ ok: false, error: "`repo` must be 'owner/repo' format" });
+    }
+
     const token = process.env.GH_TOKEN;
-    console.log("🔐 GH_TOKEN loaded:", !!token);
-
     if (!token) {
-      console.error("❌ Missing GitHub token in environment");
-      return res.status(500).json({
-        ok: false,
-        error: "Missing GitHub token (GH_TOKEN not found in environment variables)",
-      });
+      return res.status(500).json({ ok: false, error: "Missing GH_TOKEN in environment" });
     }
 
-    // content base64 인코딩
-    const encodedContent = Buffer.from(content || "").toString("base64");
+    const GITHUB_API = "https://api.github.com";
+    const headers = {
+      Accept: "application/vnd.github+json",
+      "User-Agent": "yuna-hub-app",
+      Authorization: `Bearer ${token}`,
+    };
 
-    // GitHub API endpoint
-    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
-    console.log("🌍 Target URL:", url);
+    // 1) 현재 파일 존재여부 확인(sha 필요 여부 판단)
+    const getUrl = `${GITHUB_API}/repos/${owner}/${repoName}/contents/${encodeURI(path)}?ref=${encodeURIComponent(branch)}`;
+    let sha = undefined;
 
-    // API 요청
-    const response = await fetch(url, {
+    const headResp = await fetch(getUrl, { headers });
+    if (headResp.ok) {
+      const json = await headResp.json();
+      if (json && json.sha) sha = json.sha; // 업데이트 시 필요
+    } else if (headResp.status !== 404) {
+      const t = await headResp.text();
+      return res.status(headResp.status).json({ ok: false, error: `Probe failed: ${t}` });
+    }
+
+    // 2) PUT으로 생성/수정
+    const putUrl = `${GITHUB_API}/repos/${owner}/${repoName}/contents/${encodeURI(path)}`;
+    const putBody = {
+      message,
+      content: Buffer.from(content, "utf8").toString("base64"),
+      branch,
+      ...(sha ? { sha } : {}),
+    };
+
+    const putResp = await fetch(putUrl, {
       method: "PUT",
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: `Update via Vercel API at ${new Date().toISOString()}`,
-        content: encodedContent,
-        branch,
-      }),
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(putBody),
     });
 
-    const resultText = await response.text();
-    console.log("📦 GitHub API raw response:", resultText);
-
-    // 실패 처리
-    if (!response.ok) {
-      console.error("❗ GitHub API Error", response.status, resultText);
-      return res.status(response.status).json({
+    if (!putResp.ok) {
+      const errorText = await putResp.text();
+      return res.status(putResp.status).json({
         ok: false,
-        status: response.status,
-        error: resultText,
+        error: `GitHub PUT ${putResp.status}: ${errorText}`,
       });
     }
 
-    // 성공 응답
-    console.log("✅ File successfully synced to GitHub!");
-    res.status(200).json({
+    const result = await putResp.json();
+    return res.status(200).json({
       ok: true,
-      message: "File successfully synced to GitHub",
-      response: JSON.parse(resultText),
+      action: sha ? "updated" : "created",
+      path,
+      branch,
+      commit: result.commit && result.commit.sha,
     });
-
   } catch (err) {
-    console.error("💥 Unhandled error in github-sync:", err);
-    res.status(500).json({
+    return res.status(500).json({
       ok: false,
       error: err.message,
-      stack: err.stack,
     });
   }
 }
