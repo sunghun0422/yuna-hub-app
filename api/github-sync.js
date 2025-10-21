@@ -1,56 +1,49 @@
-export default async function handler(req, res) {
-  try {
-    const repo = "sunghun0422/yuna-hub-app";
-    const branch = "dev_v13"; // 최신 브랜치
-    const token = process.env.GH_TOKEN;
+import fetch from "node-fetch";
 
-    if (!token) {
-      return res.status(500).json({
-        status: "error",
-        message: "Missing GH_TOKEN environment variable"
-      });
+export default async function handler(req, res) {
+  // GET 요청도 확인용으로 열어둠
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+  }
+
+  try {
+    const { repo, branch, path } = req.body || {};
+
+    if (!repo || !branch) {
+      return res.status(400).json({ ok: false, error: "Missing repo or branch" });
     }
 
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/?ref=${branch}`;
-    const response = await fetch(apiUrl, {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "YunaHub-Pro-Server"
-      }
+    const token = process.env.GH_TOKEN;
+    if (!token) {
+      return res.status(500).json({ ok: false, error: "Missing GH_TOKEN in environment" });
+    }
+
+    const url = `https://api.github.com/repos/${repo}/contents/${path || ""}?ref=${branch}`;
+    const response = await fetch(url, {
+      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" }
     });
 
     if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).json({
-        status: "error",
-        message: `GitHub API error: ${response.statusText}`,
-        details: errText
-      });
+      const text = await response.text();
+      return res.status(response.status).json({ ok: false, error: text });
     }
 
     const data = await response.json();
 
-    if (!Array.isArray(data)) {
-      return res.status(500).json({
-        status: "error",
-        message: "Unexpected GitHub API response format"
-      });
-    }
-
-    const files = data.map(f => f.name);
+    // 정상 응답
     res.status(200).json({
-      status: "ok",
+      ok: true,
       repo,
       branch,
-      fileCount: files.length,
-      files: files.slice(0, 10),
+      path: path || "/",
+      fileCount: Array.isArray(data) ? data.length : 1,
+      preview:
+        Array.isArray(data) && data.length
+          ? data.slice(0, 5).map((f) => f.name)
+          : data.name || null,
       timestamp: new Date().toISOString()
     });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: error.message || "Unknown internal error"
-    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
   }
 }
