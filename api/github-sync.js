@@ -1,14 +1,12 @@
-import { Buffer } from "buffer";
-
 export default async function handler(req, res) {
   try {
     const { repo, branch, path, content } = req.body;
 
-    console.log("📩 Incoming Request:", { repo, branch, path });
-    console.log("🔥 GH_TOKEN:", process.env.GH_TOKEN);
+    console.log("📥 Incoming Request", { repo, branch, path });
+    console.log("🔐 GH_TOKEN exists:", !!process.env.GH_TOKEN);
 
     const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
-    const encodedContent = Buffer.from(content).toString("base64");
+    console.log("🌐 GitHub API URL:", url);
 
     const response = await fetch(url, {
       method: "PUT",
@@ -18,24 +16,25 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        message: "Update via API",
-        content: encodedContent,
-        branch: branch,
+        message: "Add or update file via API",
+        content: Buffer.from(content).toString("base64"),
+        branch,
       }),
     });
 
-    const responseBody = await response.text();
+    const responseText = await response.text();
 
     if (!response.ok) {
-      throw new Error(
-        `GitHub API error: ${response.status} - ${response.statusText} - ${responseBody}`
-      );
+      console.error("❌ GitHub API Error:", response.status, responseText);
+      throw new Error(`GitHub API Error: ${response.status}`);
     }
 
-    const data = JSON.parse(responseBody);
-    return res.status(200).json({ ok: true, data });
+    const data = JSON.parse(responseText);
+    console.log("✅ GitHub API Success:", data);
+
+    res.status(200).json({ ok: true, data });
   } catch (err) {
-    console.error("❌ Error in /api/github-sync:", err);
+    console.error("🔥 Server error in /api/github-sync:", err);
     res.status(500).json({
       ok: false,
       message: "Server error in /api/github-sync",
