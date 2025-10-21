@@ -1,43 +1,74 @@
+// /api/github-sync.js
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
+  console.log("🟢 [github-sync] Function started");
+
   try {
+    // 요청 본문 로깅
+    console.log("📩 Incoming request body:", req.body);
+
     const { repo, branch, path, content } = req.body;
 
-    console.log("📥 Incoming Request", { repo, branch, path });
-    console.log("🔐 GH_TOKEN exists:", !!process.env.GH_TOKEN);
+    // 환경변수 확인
+    const token = process.env.GH_TOKEN;
+    console.log("🔐 GH_TOKEN loaded:", !!token);
 
-    const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
-    console.log("🌐 GitHub API URL:", url);
+    if (!token) {
+      console.error("❌ Missing GitHub token in environment");
+      return res.status(500).json({
+        ok: false,
+        error: "Missing GitHub token (GH_TOKEN not found in environment variables)",
+      });
+    }
 
+    // content base64 인코딩
+    const encodedContent = Buffer.from(content || "").toString("base64");
+
+    // GitHub API endpoint
+    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+    console.log("🌍 Target URL:", url);
+
+    // API 요청
     const response = await fetch(url, {
       method: "PUT",
       headers: {
-        Authorization: `token ${process.env.GH_TOKEN}`,
-        Accept: "application/vnd.github.v3+json",
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github+json",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        message: "Add or update file via API",
-        content: Buffer.from(content).toString("base64"),
+        message: `Update via Vercel API at ${new Date().toISOString()}`,
+        content: encodedContent,
         branch,
       }),
     });
 
-    const responseText = await response.text();
+    const resultText = await response.text();
+    console.log("📦 GitHub API raw response:", resultText);
 
+    // 실패 처리
     if (!response.ok) {
-      console.error("❌ GitHub API Error:", response.status, responseText);
-      throw new Error(`GitHub API Error: ${response.status}`);
+      console.error("❗ GitHub API Error", response.status, resultText);
+      return res.status(response.status).json({
+        ok: false,
+        status: response.status,
+        error: resultText,
+      });
     }
 
-    const data = JSON.parse(responseText);
-    console.log("✅ GitHub API Success:", data);
+    // 성공 응답
+    console.log("✅ File successfully synced to GitHub!");
+    res.status(200).json({
+      ok: true,
+      message: "File successfully synced to GitHub",
+      response: JSON.parse(resultText),
+    });
 
-    res.status(200).json({ ok: true, data });
   } catch (err) {
-    console.error("🔥 Server error in /api/github-sync:", err);
+    console.error("💥 Unhandled error in github-sync:", err);
     res.status(500).json({
       ok: false,
-      message: "Server error in /api/github-sync",
       error: err.message,
       stack: err.stack,
     });
