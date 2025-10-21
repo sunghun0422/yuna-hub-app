@@ -1,129 +1,174 @@
 // /api/github-sync.js
 
-const GITHUB_API_BASE = "https://api.github.com";
+import { Buffer } from "node:buffer";
+import {
+  ensureFetchAvailable,
+  parseJsonBody,
+  resolvePath,
+  splitRepo,
+  requireGitHubToken,
+  createGitHubHeaders,
+  buildContentsUrl,
+  readResponseBody,
+  isoTimestamp,
+} from "./_lib/github-helpers.js";
 
-function normalizePath(input) {
-  if (!input) return "";
-  const sanitized = String(input).trim().replace(/^\/+/g, "").replace(/\/+$/g, "");
-  if (!sanitized) return "";
-  return sanitized
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-}
+const ALLOWED_METHODS = new Set(["POST", "PUT"]);
 
-function getRequestBody(req) {
-  if (!req) return {};
-  if (req.body == null) return {};
-  if (typeof req.body === "string" && req.body.length > 0) {
-    try {
-      return JSON.parse(req.body);
-    } catch (err) {
-      console.error("[github-sync] Failed to parse JSON body", err);
-      return {};
-    }
+function normalizeInput(value) {
+  if (Array.isArray(value)) {
+    return value.length > 0 ? String(value[0]).trim() : "";
   }
-  if (typeof req.body === "object") return req.body;
-  return {};
+  if (value == null) {
+    return "";
+  }
+  return String(value).trim();
 }
+
+export const config = {
+  runtime: "nodejs20.x",
+};
 
 export default async function handler(req, res) {
-  if (req.method !== "POST" && req.method !== "PUT") {
+  if (!ALLOWED_METHODS.has(req.method)) {
     console.error(`[github-sync] Method not allowed: ${req.method}`);
     return res.status(405).json({ ok: false, error: "Method Not Allowed" });
   }
 
   try {
-    const body = getRequestBody(req);
-    const { repo, branch = "main", content, message = "yuna-hub sync" } = body;
-    const path = normalizePath(body.path);
+    ensureFetchAvailable();
 
-    if (!repo) {
+    const body = parseJsonBody(req);
+    const repoInput = normalizeInput(body.repo);
+    const branchInput = normalizeInput(body.branch) || "main";
+    const messageInput = normalizeInput(body.message) || "yuna-hub sync";
+    const { clean: cleanPath, encoded: encodedPath } = resolvePath(body.path);
+    const contentInput = body.content;
+
+    if (!repoInput) {
       console.error("[github-sync] Missing repo parameter");
-      return res.status(400).json({ ok: false, error: "`repo` is required" });
+      return res.status(400).json({
+        ok: false,
+        error: "`repo` is required",
+        timestamp: isoTimestamp(),
+      });
     }
-    if (!path) {
+
+    if (!cleanPath) {
       console.error("[github-sync] Missing path parameter");
-      return res.status(400).json({ ok: false, error: "`path` is required" });
-    }
-    if (typeof content !== "string") {
-      console.error("[github-sync] Invalid content type", { typeof: typeof content });
-      return res.status(400).json({ ok: false, error: "`content` must be a string" });
-    }
-
-    const [owner, repoName] = String(repo).split("/");
-    if (!owner || !repoName) {
-      console.error(`[github-sync] Invalid repo format: ${repo}`);
-      return res.status(400).json({ ok: false, error: "`repo` must be 'owner/repo' format" });
+      return res.status(400).json({
+        ok: false,
+        error: "`path` is required",
+        timestamp: isoTimestamp(),
+      });
     }
 
-    const token = process.env.GH_TOKEN;
-    if (!token) {
-      const messageText = "Missing GH_TOKEN environment variable";
-      console.error(`[github-sync] ${messageText}`);
-      return res.status(500).json({ ok: false, error: messageText });
+    if (typeof contentInput !== "string") {
+      console.error("[github-sync] Invalid content type", {
+        typeof: typeof contentInput,
+      });
+      return res.status(400).json({
+        ok: false,
+        error: "`content` must be a string",
+        timestamp: isoTimestamp(),
+      });
     }
 
-    const headers = {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "yuna-hub-app",
-      Authorization: `Bearer ${token}`,
-    };
+    let owner;
+    let repoName;
+    try {
+      ({ owner, repo: repoName } = splitRepo(repoInput));
+    } catch (error) {
+      console.error(`[github-sync] Invalid repo format: ${repoInput}`);
+      return res.status(400).json({
+        ok: false,
+        error: error.message,
+        timestamp: isoTimestamp(),
+      });
+    }
 
-    const branchParam = encodeURIComponent(String(branch || "main"));
-    const targetPath = path;
+    let token;
+    try {
+      token = requireGitHubToken();
+    } catch (error) {
+      console.error(`[github-sync] ${error.message}`);
+      return res.status(500).json({ ok: false, error: error.message, timestamp: isoTimestamp() });
+    }
 
-    // 1) Check if file exists to obtain SHA
-    const getUrl = `${GITHUB_API_BASE}/repos/${owner}/${repoName}/contents/${targetPath}?ref=${branchParam}`;
-    let sha;
+    const headers = createGitHubHeaders(token);
 
+    const getUrl = buildContentsUrl({
+      owner,
+      repo: repoName,
+      encodedPath,
+      branch: branchInput,
+    });
+
+    let existingSha;
     const getResponse = await fetch(getUrl, { headers });
-    if (getResponse.ok) {
+    if (getResponse.status === 200) {
       const json = await getResponse.json();
-      sha = json && json.sha ? json.sha : undefined;
+      if (json && typeof json === "object" && json.sha) {
+        existingSha = json.sha;
+      }
     } else if (getResponse.status !== 404) {
-      const text = await getResponse.text();
+      const text = await readResponseBody(getResponse);
       console.error(`[github-sync] Probe failed ${getResponse.status}: ${text}`);
-      return res.status(getResponse.status).json({ ok: false, error: `Probe failed: ${text}` });
+      return res.status(getResponse.status).json({
+        ok: false,
+        error: `Probe failed: ${text || getResponse.statusText}`,
+        branch: branchInput,
+        path: cleanPath,
+        timestamp: isoTimestamp(),
+      });
     }
 
-    // 2) Create or update file
-    const putUrl = `${GITHUB_API_BASE}/repos/${owner}/${repoName}/contents/${targetPath}`;
-    const putBody = {
-      message,
-      content: Buffer.from(content, "utf8").toString("base64"),
-      branch,
-      ...(sha ? { sha } : {}),
+    const putUrl = buildContentsUrl({ owner, repo: repoName, encodedPath });
+    const payload = {
+      message: messageInput,
+      content: Buffer.from(contentInput, "utf8").toString("base64"),
+      branch: branchInput,
+      ...(existingSha ? { sha: existingSha } : {}),
     };
 
     const putResponse = await fetch(putUrl, {
       method: "PUT",
       headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify(putBody),
+      body: JSON.stringify(payload),
     });
 
     if (!putResponse.ok) {
-      const text = await putResponse.text();
+      const text = await readResponseBody(putResponse);
       console.error(`[github-sync] GitHub PUT error ${putResponse.status}: ${text}`);
       return res.status(putResponse.status).json({
         ok: false,
-        error: `GitHub PUT ${putResponse.status}: ${text}`,
+        error: `GitHub PUT ${putResponse.status}: ${text || putResponse.statusText}`,
+        branch: branchInput,
+        path: cleanPath,
+        timestamp: isoTimestamp(),
       });
     }
 
     const result = await putResponse.json();
+    const commitSha =
+      result && result.commit && typeof result.commit === "object"
+        ? result.commit.sha
+        : undefined;
+
     return res.status(200).json({
       ok: true,
-      action: sha ? "updated" : "created",
-      path,
-      branch,
-      commit: result.commit && result.commit.sha,
+      action: existingSha ? "updated" : "created",
+      path: cleanPath,
+      branch: branchInput,
+      commit: commitSha,
+      timestamp: isoTimestamp(),
     });
-  } catch (err) {
-    console.error("[github-sync] Unexpected error", err);
+  } catch (error) {
+    console.error("[github-sync] Unexpected error", error);
     return res.status(500).json({
       ok: false,
-      error: err && err.message ? err.message : "Unknown error",
+      error: error && error.message ? error.message : "Unknown error",
+      timestamp: isoTimestamp(),
     });
   }
 }
