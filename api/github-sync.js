@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
   try {
     const token = process.env.GH_TOKEN;
-    console.log("✅ GH_TOKEN 확인:", token); // 로그 찍기
 
     if (!token) {
       return res.status(500).json({
@@ -10,13 +9,22 @@ export default async function handler(req, res) {
       });
     }
 
-    const repo = req.body?.repo || "sunghun0422/yuna-hub-app";
-    const branch = req.body?.branch || "dev_v13";
-    const path = req.body?.path || "";
+    // POST 요청에서 body 파싱
+    const body = req.method === "POST" ? req.body : {};
+    const repo = body.repo || "sunghun0422/yuna-hub-app";
+    const branch = body.branch || "dev_v13";
+    const path = body.path || "";
 
+    // 요청할 GitHub API URL 생성
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
-    console.log("🌐 요청 URL:", apiUrl); // 요청 URL 확인
 
+    // ✅ 디버깅 로그 출력
+    console.log("[DEBUG] Fetch URL:", apiUrl);
+    console.log("[DEBUG] Token present:", !!token, "Length:", token.length);
+    console.log("[DEBUG] Method:", req.method);
+    console.log("[DEBUG] Body:", body);
+
+    // GitHub API 요청
     const response = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -24,23 +32,28 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log("📦 GitHub 응답 상태:", response.status); // 상태 코드 확인
+    const contentType = response.headers.get("content-type");
+    let responseData;
+    if (contentType && contentType.includes("application/json")) {
+      responseData = await response.json();
+    } else {
+      responseData = await response.text();
+    }
 
+    // 에러 응답인 경우 상세 정보 포함 반환
     if (!response.ok) {
-      const errorBody = await response.text();
+      console.error("[DEBUG] GitHub API Error:", responseData);
       return res.status(response.status).json({
         ok: false,
-        message: `GitHub API failed: ${response.statusText}`,
-        detail: errorBody,
+        message: `GitHub API error: ${response.statusText}`,
+        detail: responseData,
       });
     }
 
-    const data = await response.json();
-    console.log("📁 GitHub 응답 데이터:", data); // 응답 데이터 확인
-
-    const files = Array.isArray(data)
-      ? data.map((f) => f.name)
-      : [data.name || "No files"];
+    // 파일 리스트 파싱
+    const files = Array.isArray(responseData)
+      ? responseData.map((f) => f.name)
+      : [responseData.name || "No files"];
 
     return res.status(200).json({
       ok: true,
@@ -52,7 +65,7 @@ export default async function handler(req, res) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("❌ Github Sync Server Error:", error);
+    console.error("❌ Server Exception:", error);
     return res.status(500).json({
       ok: false,
       message: error.message || "Unexpected server error.",
