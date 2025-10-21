@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
   try {
-    // ✅ 1. 환경변수 (Vercel에 GH_TOKEN 등록되어 있어야 함)
     const token = process.env.GH_TOKEN;
     if (!token) {
       return res.status(500).json({
@@ -9,40 +8,30 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ 2. Body parsing (POST 요청 또는 기본값)
-    let body = {};
-    try {
-      if (req.method === "POST") body = req.body;
-    } catch {
-      body = {};
-    }
+    const repo = req.body?.repo || "sunghun0422/yuna-hub-app";
+    const branch = req.body?.branch || "dev_v13";
+    const path = req.body?.path || "";
 
-    const repo = body.repo || "sunghun0422/yuna-hub-app";
-    const branch = body.branch || "dev_v13";
-    const path = body.path || "";
-
-    // ✅ 3. GitHub API URL 생성
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
 
-    // ✅ 4. Fetch 요청 (내장 fetch 사용)
     const response = await fetch(apiUrl, {
       headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
       },
     });
 
-    const data = await response.json();
-
-    // ✅ 5. 오류 처리
     if (!response.ok) {
+      const errorBody = await response.text();
       return res.status(response.status).json({
         ok: false,
-        message: `GitHub API Error: ${data.message || "Unknown error"}`,
+        message: `GitHub API failed: ${response.statusText}`,
+        detail: errorBody,
       });
     }
 
-    // ✅ 6. 결과 변환
+    const data = await response.json();
+
     const files = Array.isArray(data)
       ? data.map((f) => f.name)
       : [data.name || "No files"];
@@ -57,10 +46,10 @@ export default async function handler(req, res) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("❌ Sync Error:", error);
+    console.error("❌ Github Sync Server Error:", error);
     return res.status(500).json({
       ok: false,
-      message: error.message || "Internal Server Error",
+      message: error.message || "Unexpected server error.",
     });
   }
 }
