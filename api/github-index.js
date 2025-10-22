@@ -1,70 +1,102 @@
 // /api/github-index.js
 
-const GITHUB_API_BASE = "https://api.github.com";
+import {
+  ensureFetchAvailable,
+  parseJsonBody,
+  resolvePath,
+  splitRepo,
+  requireGitHubToken,
+  createGitHubHeaders,
+  buildContentsUrl,
+  readResponseBody,
+  isoTimestamp,
+} from "./_lib/github-helpers.js";
 
-function normalizePath(input) {
-  if (!input) return "";
-  const sanitized = String(input).trim().replace(/^\/+/g, "").replace(/\/+$/g, "");
-  if (!sanitized) return "";
-  return sanitized
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-}
+const ALLOWED_METHODS = new Set(["GET", "POST"]);
 
-function getRequestBody(req) {
-  if (!req) return {};
-  if (req.body == null) return {};
-  if (typeof req.body === "string" && req.body.length > 0) {
-    try {
-      return JSON.parse(req.body);
-    } catch (err) {
-      console.error("[github-index] Failed to parse JSON body", err);
-      return {};
-    }
+function normalizeInput(value) {
+  if (Array.isArray(value)) {
+    return value.length > 0 ? String(value[0]).trim() : "";
   }
-  if (typeof req.body === "object") return req.body;
-  return {};
+  if (value == null) {
+    return "";
+  }
+  return String(value).trim();
 }
+
+function summarizeItem(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+  const summary = {
+    name: item.name,
+    path: item.path,
+    type: item.type,
+  };
+  if (item.sha) {
+    summary.sha = item.sha;
+  }
+  if (typeof item.size === "number") {
+    summary.size = item.size;
+  }
+  return summary;
+}
+
+export const config = {
+  runtime: "nodejs20.x",
+};
 
 export default async function handler(req, res) {
-  if (req.method !== "POST" && req.method !== "GET") {
+  if (!ALLOWED_METHODS.has(req.method)) {
     console.error(`[github-index] Method not allowed: ${req.method}`);
     return res.status(405).json({ ok: false, error: "Method Not Allowed" });
   }
 
   try {
-    const body = req.method === "POST" ? getRequestBody(req) : req.query || {};
-    const { repo, branch = "main" } = body;
-    const path = normalizePath(body.path);
+    ensureFetchAvailable();
 
-    if (!repo) {
+    const input =
+      req.method === "GET" ? { ...(req.query || {}) } : parseJsonBody(req);
+
+    const repoInput = normalizeInput(input.repo);
+    const branchInput = normalizeInput(input.branch) || "main";
+    const { clean: cleanPath, encoded: encodedPath } = resolvePath(input.path);
+
+    if (!repoInput) {
       console.error("[github-index] Missing repo parameter");
-      return res.status(400).json({ ok: false, error: "`repo` is required" });
+      return res
+        .status(400)
+        .json({ ok: false, error: "`repo` is required", timestamp: isoTimestamp() });
     }
 
-    const [owner, repoName] = String(repo).split("/");
-    if (!owner || !repoName) {
-      console.error(`[github-index] Invalid repo format: ${repo}`);
-      return res.status(400).json({ ok: false, error: "`repo` must be 'owner/repo' format" });
+    let owner;
+    let repoName;
+    try {
+      ({ owner, repo: repoName } = splitRepo(repoInput));
+    } catch (error) {
+      console.error(`[github-index] Invalid repo format: ${repoInput}`);
+      return res.status(400).json({
+        ok: false,
+        error: error.message,
+        timestamp: isoTimestamp(),
+      });
     }
 
-    const token = process.env.GH_TOKEN;
-    if (!token) {
-      const message = "Missing GH_TOKEN environment variable";
-      console.error(`[github-index] ${message}`);
-      return res.status(500).json({ ok: false, error: message });
+    let token;
+    try {
+      token = requireGitHubToken();
+    } catch (error) {
+      console.error(`[github-index] ${error.message}`);
+      return res.status(500).json({ ok: false, error: error.message, timestamp: isoTimestamp() });
     }
 
-    const headers = {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "yuna-hub-app",
-      Authorization: `Bearer ${token}`,
-    };
-
-    const branchParam = encodeURIComponent(String(branch || "main"));
-    const pathPart = path ? `/${path}` : "";
-    const url = `${GITHUB_API_BASE}/repos/${owner}/${repoName}/contents${pathPart}?ref=${branchParam}`;
+    const headers = createGitHubHeaders(token);
+    const url = buildContentsUrl({
+      owner,
+      repo: repoName,
+      encodedPath,
+      branch: branchInput,
+    });
 
     const response = await fetch(url, { headers });
 
@@ -73,41 +105,45 @@ export default async function handler(req, res) {
         ok: true,
         count: 0,
         files: [],
-        branch,
-        path: path || "",
-        timestamp: new Date().toISOString(),
+        branch: branchInput,
+        path: cleanPath,
+        timestamp: isoTimestamp(),
       });
     }
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[github-index] GitHub API error ${response.status}: ${errorText}`);
+      const errorText = await readResponseBody(response);
+      console.error(
+        `[github-index] GitHub API error ${response.status}: ${errorText}`
+      );
       return res.status(response.status).json({
         ok: false,
-        error: `GitHub API ${response.status}: ${errorText}`,
-        timestamp: new Date().toISOString(),
+        error: `GitHub API ${response.status}: ${errorText || response.statusText}`,
+        branch: branchInput,
+        path: cleanPath,
+        timestamp: isoTimestamp(),
       });
     }
 
     const data = await response.json();
     const files = Array.isArray(data)
-      ? data.map((item) => ({ name: item.name, path: item.path, type: item.type }))
-      : [{ name: data.name, path: data.path, type: data.type }];
+      ? data.map(summarizeItem).filter(Boolean)
+      : [summarizeItem(data)].filter(Boolean);
 
     return res.status(200).json({
       ok: true,
       count: files.length,
       files,
-      branch,
-      path: path || "",
-      timestamp: new Date().toISOString(),
+      branch: branchInput,
+      path: cleanPath,
+      timestamp: isoTimestamp(),
     });
-  } catch (err) {
-    console.error("[github-index] Unexpected error", err);
+  } catch (error) {
+    console.error("[github-index] Unexpected error", error);
     return res.status(500).json({
       ok: false,
-      error: err && err.message ? err.message : "Unknown error",
-      timestamp: new Date().toISOString(),
+      error: error && error.message ? error.message : "Unknown error",
+      timestamp: isoTimestamp(),
     });
   }
 }
