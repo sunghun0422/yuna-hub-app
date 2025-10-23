@@ -1,30 +1,35 @@
-import fetch from "node-fetch";
+// /api/github-index.js
+
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, message: 'Method Not Allowed' });
+  }
+
   try {
-    const repo = "sunghun0422/yuna-hub-app";
-    const branch = "dev_v13";
-    const token = process.env.GH_TOKEN;
+    const { repo, branch, path } = req.body;
+    if (!repo || !branch) {
+      return res.status(400).json({ ok: false, message: 'Missing required fields: repo or branch' });
+    }
 
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/?ref=${branch}`;
-    const response = await fetch(apiUrl, {
-      headers: { Authorization: `token ${token}` },
+    const url = `https://api.github.com/repos/${repo}/contents/${path || ''}?ref=${branch}`;
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${process.env.GH_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({ ok: false, message: `GitHub API error: ${errorText}` });
+    }
+
     const data = await response.json();
-
-    if (!Array.isArray(data))
-      return res.status(500).json({ ok: false, message: "GitHub API error" });
-
-    const files = data.map((f) => f.name);
-    res.status(200).json({
-      ok: true,
-      repo,
-      branch,
-      count: files.length,
-      files: files.slice(0, 10),
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    res.status(500).json({ ok: false, message: error.message });
+    res.status(200).json({ ok: true, data });
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ ok: false, message: err.message });
   }
 }
